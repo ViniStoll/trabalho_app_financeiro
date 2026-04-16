@@ -63,7 +63,7 @@ def login():
     if request.method == 'POST':
         login_input = request.form['login']
         senha_input = request.form['senha']
-        
+
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT * FROM usuario WHERE login = %s AND senha = %s", (login_input, senha_input))
@@ -297,7 +297,7 @@ def exportar_pdf():
         cur.close()
         conn.close()
 
-        # 3. Cria o arquivo PDF (Mesma lógica anterior)
+        # 3. Cria o arquivo PDF
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", style='B', size=16)
@@ -339,4 +339,4 @@ def exportar_pdf():
         return f"Erro ao gerar PDF: {e}"
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
