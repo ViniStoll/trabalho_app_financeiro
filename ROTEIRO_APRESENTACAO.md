@@ -8,7 +8,19 @@ estão prontos para copiar e colar.
 - **Produção:** http://177.44.248.122:8082
 - **Repositório:** https://github.com/ViniStoll/trabalho_app_financeiro
 
-> Antes de começar, abra um terminal e conecte na VM:
+### Onde cada passo é feito
+
+Você vai usar **dois lugares**. Cada passo abaixo está marcado com um ícone:
+
+- 💻 **No seu computador** (terminal na pasta do projeto): para editar o
+  código e fazer `git push`. É o "Workspace local" do diagrama.
+- 🖥️ **Na VM** (via `ssh`): para montar os ambientes e promover produção.
+
+> 💻 No seu computador, abra um terminal na pasta do projeto:
+> ```bash
+> cd "/Users/viniciusstoll/Documents/Univates/Gerencia de Configuração de Software/app_financeiro"
+> ```
+> 🖥️ E, em outra aba/terminal, conecte na VM:
 > ```bash
 > ssh univates@177.44.248.122
 > cd ~/trabalho_app_financeiro
@@ -31,7 +43,7 @@ sudo systemctl start actions.runner.*
 
 ---
 
-## Passo 1 — Provar que a VM está zerada
+## Passo 1 — 🖥️ (VM) Provar que a VM está zerada
 
 Mostra que não há Docker, containers nem imagens criadas.
 
@@ -47,7 +59,7 @@ sudo docker images 2>/dev/null || echo "Nenhuma imagem"
 
 ---
 
-## Passo 2 — Montar Homologação e Produção (1 script)
+## Passo 2 — 🖥️ (VM) Montar Homologação e Produção (1 script)
 
 ```bash
 cd ~/trabalho_app_financeiro
@@ -67,7 +79,7 @@ sudo docker ps
 
 ---
 
-## Passo 3 — Mostrar a aplicação funcionando nos 2 ambientes
+## Passo 3 — 🌐 (Navegador) Mostrar a aplicação nos 2 ambientes
 
 No navegador, abra **duas abas**:
 
@@ -79,7 +91,7 @@ Mostre a lista de lançamentos funcionando nas duas.
 
 ---
 
-## Passo 4 — Registrar a mudança (Controle de Mudança)
+## Passo 4 — 🌐 (GitHub) Registrar a mudança (Controle de Mudança)
 
 No GitHub, vá em **Issues → New issue** e crie, por exemplo:
 
@@ -91,19 +103,15 @@ No GitHub, vá em **Issues → New issue** e crie, por exemplo:
 
 ---
 
-## Passo 5 — Implementar as 2 mudanças
+## Passo 5 — 💻 (Seu computador) Implementar as 2 mudanças
 
 ### 5.1 Mudança de CÓDIGO (a label que o professor pedir)
 
-Edite o `app.py`. Exemplo: trocar `Meus Lançamentos` por `Painel Financeiro`.
+Abra o arquivo `app.py` no seu editor (ex.: VSCode) e altere a label que o
+professor pedir. Exemplo: trocar `Meus Lançamentos` por `Painel Financeiro`.
 
-```bash
-nano app.py
-# (localize o texto que o professor pedir e altere)
-```
-
-> Labels fáceis de achar: `Financeiro Login`, `Meus Lançamentos`,
-> `Novo Lançamento`, `Categorias`.
+> Labels fáceis de achar (busque pelo texto no `app.py`):
+> `Financeiro Login`, `Meus Lançamentos`, `Novo Lançamento`, `Categorias`.
 
 ### 5.2 Mudança de BANCO (criar a tabela de categoria)
 
@@ -118,7 +126,7 @@ cp mudanca_exemplo/V2__criar_tabela_categoria.sql db/migrations/
 
 ---
 
-## Passo 6 — Versionar (commit + push)
+## Passo 6 — 💻 (Seu computador) Versionar (commit + push)
 
 ```bash
 git add app.py db/migrations/V2__criar_tabela_categoria.sql
@@ -130,7 +138,7 @@ O `git push` **dispara o GitHub Actions** automaticamente.
 
 ---
 
-## Passo 7 — Integração + atualização da Homologação (automático)
+## Passo 7 — 🌐 (Navegador) Integração + atualização da Homologação
 
 Abra a aba **Actions** do GitHub:
 https://github.com/ViniStoll/trabalho_app_financeiro/actions
@@ -163,7 +171,7 @@ sudo docker exec app_homolog su postgres -c "psql -d financeiro -c 'SELECT count
 
 ---
 
-## Passo 8 — Atualizar a Produção (1 script)
+## Passo 8 — 🖥️ (VM) Atualizar a Produção (1 script)
 
 A produção é promovida manualmente, rodando um script:
 
