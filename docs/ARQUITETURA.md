@@ -23,6 +23,7 @@ flowchart LR
     end
 
     subgraph VM["🖥️ VM Univates — Ubuntu 24.04 (177.44.248.122)"]
+        RUNNER["Runner self-hosted<br/>(agente de deploy)"]
         subgraph C1["🐳 Container app_homolog :8081"]
             H_APP["Flask (Python)"]
             H_DB[("PostgreSQL")]
@@ -37,7 +38,8 @@ flowchart LR
     DEV -->|"git push"| REPO
     DEV -.->|"registra"| ISSUE
     REPO -->|"dispara"| ACT
-    ACT -->|"deploy via SSH<br/>(automatico)"| C1
+    ACT -->|"aciona deploy<br/>(automatico)"| RUNNER
+    RUNNER -->|"atualiza"| C1
     ACT -.->|"script manual<br/>(promocao)"| C2
     FLY -->|"migra"| H_DB
     FLY -->|"migra"| P_DB
@@ -57,7 +59,11 @@ flowchart LR
    |    2. Qualidade (Flake8 + Pylint)
    |    3. Build (Docker)
    |
-   |  (deploy automatico via SSH)        (script manual)
+   |  (aciona o runner na VM)
+   v
+ Runner self-hosted (na VM)
+   |
+   |  (deploy automatico)               (script manual)
    v                                      v
  [ Container HOMOLOGACAO :8081 ]   [ Container PRODUCAO :8082 ]
    Flask + PostgreSQL                Flask + PostgreSQL
@@ -65,6 +71,13 @@ flowchart LR
         |       Flyway (migracoes do banco)
         +----------------+----------------+
 ```
+
+> **Por que um runner self-hosted?** O firewall de perímetro da Univates
+> bloqueia conexões SSH **de entrada** vindas de IPs de nuvem (como os
+> runners do GitHub). Por isso, em vez do GitHub conectar na VM, a VM roda
+> um *runner self-hosted* que se conecta ao GitHub (saída) e executa o
+> deploy localmente. É a forma robusta e padrão de integrar uma VM com
+> acesso de entrada restrito.
 
 ---
 
@@ -86,7 +99,8 @@ flowchart LR
 | Testes automatizados | **pytest** (estilo unittest) | 20 testes + estatísticas |
 | Qualidade de código | **Flake8 + Pylint** | "Mess detector" / linter |
 | Automação de infraestrutura | **Shell scripts** + Docker | Instala tudo do zero |
-| Deploy (transferência) | **SSH** (appleboy/ssh-action) | Actions → VM |
+| Agente de deploy | **Runner self-hosted** do GitHub Actions | Roda na VM (saída → GitHub) |
+| Deploy (transferência) | Runner executa o script na VM | Sem SSH de entrada |
 | Notificação | E-mail (SMTP) | Opcional, ao criar/editar lançamento |
 
 ---

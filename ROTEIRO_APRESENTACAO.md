@@ -14,6 +14,21 @@ estão prontos para copiar e colar.
 > cd ~/trabalho_app_financeiro
 > ```
 
+### Antes da apresentação (conferir 1x)
+
+O deploy automático da Homologação é feito por um **runner self-hosted** do
+GitHub Actions que roda na VM. Confirme que o serviço dele está ativo:
+
+```bash
+sudo systemctl status actions.runner.* --no-pager | grep Active
+```
+
+Deve aparecer `Active: active (running)`. Se não estiver, inicie com:
+
+```bash
+sudo systemctl start actions.runner.*
+```
+
 ---
 
 ## Passo 1 — Provar que a VM está zerada
@@ -125,7 +140,8 @@ Mostre o pipeline rodando, em ordem:
 1. **20 testes** passando + a tabela de estatísticas (no "Summary" da execução)
 2. **Qualidade** (Flake8 + Pylint)
 3. **Build** da imagem
-4. **Deploy na Homologação** (conecta na VM por SSH e atualiza)
+4. **Deploy na Homologação** — o job "Atualizar Homologacao" roda no
+   *runner self-hosted* da própria VM e atualiza o ambiente automaticamente.
 
 Quando terminar (verde), volte ao navegador na aba de **Homologação**
 (http://177.44.248.122:8081):
@@ -137,9 +153,9 @@ Confirme que o banco **não foi apagado** (os lançamentos antigos continuam lá
 Para provar pelo banco:
 
 ```bash
-sudo docker exec app_homolog psql -U postgres -d financeiro -c "\dt"
-sudo docker exec app_homolog psql -U postgres -d financeiro -c "SELECT * FROM categoria;"
-sudo docker exec app_homolog psql -U postgres -d financeiro -c "SELECT count(*) FROM lancamento;"
+sudo docker exec app_homolog su postgres -c "psql -d financeiro -c '\dt'"
+sudo docker exec app_homolog su postgres -c "psql -d financeiro -c 'SELECT * FROM categoria;'"
+sudo docker exec app_homolog su postgres -c "psql -d financeiro -c 'SELECT count(*) FROM lancamento;'"
 ```
 
 > Repare que a tabela `categoria` foi **adicionada** e a `lancamento`
@@ -164,8 +180,8 @@ Volte ao navegador na aba de **Produção** (http://177.44.248.122:8082):
 Para provar pelo banco:
 
 ```bash
-sudo docker exec app_prod psql -U postgres -d financeiro -c "\dt"
-sudo docker exec app_prod psql -U postgres -d financeiro -c "SELECT * FROM categoria;"
+sudo docker exec app_prod su postgres -c "psql -d financeiro -c '\dt'"
+sudo docker exec app_prod su postgres -c "psql -d financeiro -c 'SELECT * FROM categoria;'"
 ```
 
 ---
