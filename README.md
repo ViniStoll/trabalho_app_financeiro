@@ -68,4 +68,4 @@ bash scripts/03_atualizar_producao.sh      # Produção
 | Homologação | http://177.44.248.122:8081 |
 | Produção | http://177.44.248.122:8082 |
 
-Login padrão: `admin` / `123456`
+Login padrão: `admin` / `admin`

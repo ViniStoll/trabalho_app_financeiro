@@ -31,22 +31,25 @@ Você vai usar **dois lugares**. Cada passo abaixo está marcado com um ícone:
 
 ---
 
-## Passo 1 — 🖥️ (VM) Limpar a VM completamente
+## Passo 1 — 🖥️ (VM) Zerar a VM
 
-Primeiro, mostre que está tudo zerado (antes de limpar, se quiser):
-
-```bash
-docker --version || echo "Docker NAO instalado"
-```
-
-Agora rode a **limpeza completa** (um comando, baixado do GitHub). Ela
-remove containers, imagens, o Docker e o código do projeto:
+Rode **um comando** que apaga tudo (containers, imagens, volumes e o código).
+Ele não vem do GitHub — é direto na VM:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/00_limpar_vm.sh | bash
+sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null; sudo docker rmi -f $(sudo docker images -aq) 2>/dev/null; sudo docker system prune -a -f --volumes; rm -rf ~/trabalho_app_financeiro
 ```
 
-Ao final ele mostra a verificação: **docker não instalado** e **código removido**.
+Agora prove que a VM está zerada (é o que o professor vai conferir):
+
+```bash
+sudo docker ps        # nenhum container
+sudo docker images    # nenhuma imagem
+```
+
+> Os dois comandos devem aparecer **vazios** (só o cabeçalho). O Docker
+> continua instalado de propósito, só para esses comandos funcionarem e
+> mostrarem que não há nada criado.
 
 ---
 
@@ -75,7 +78,7 @@ No navegador, abra **duas abas**:
 - Homologação: **http://177.44.248.122:8081**
 - Produção: **http://177.44.248.122:8082**
 
-Login: usuário `admin` / senha `123456`.
+Login: usuário **`admin`** / senha **`admin`** (já vem cadastrado no banco).
 Mostre a lista de lançamentos funcionando nas duas.
 
 ---

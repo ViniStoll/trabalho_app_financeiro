@@ -1,29 +1,22 @@
 #!/bin/bash
 # ============================================================
-# PASSO 1 - LIMPEZA COMPLETA DA VM
+# PASSO 1 - ZERAR A VM
 #
-# Deixa a VM totalmente zerada: remove containers, imagens e
-# volumes do Docker, DESINSTALA o Docker, apaga o codigo do
-# projeto e para a aplicacao antiga que rodava no host.
+# Remove TUDO que foi criado no Docker (containers, imagens,
+# volumes e redes), para a aplicacao antiga e apaga o codigo.
 #
-# Este script e auto-suficiente (nao depende de nenhum outro
-# arquivo) e pode ser rodado direto do GitHub:
+# O Docker NAO e desinstalado de proposito: assim os comandos
+# 'sudo docker ps' e 'sudo docker images' continuam funcionando
+# e mostram que esta tudo vazio (a prova de que a VM esta zerada).
 #
-#   curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/00_limpar_vm.sh | bash
+# Este script nao depende de mais nada e pode ser rodado direto:
+#   bash 00_limpar_vm.sh
 # ============================================================
 
-echo ">>> Removendo containers, imagens, redes e volumes do Docker..."
-if command -v docker >/dev/null 2>&1; then
-    sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null
-    sudo docker rmi -f $(sudo docker images -aq) 2>/dev/null
-    sudo docker system prune -a -f --volumes 2>/dev/null
-fi
-
-echo ">>> Desinstalando o Docker..."
-sudo systemctl stop docker docker.socket containerd 2>/dev/null
-sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras >/dev/null 2>&1
-sudo apt-get autoremove -y >/dev/null 2>&1
-sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker
+echo ">>> Removendo containers, imagens, volumes e redes do Docker..."
+sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null
+sudo docker rmi -f $(sudo docker images -aq) 2>/dev/null
+sudo docker system prune -a -f --volumes 2>/dev/null
 
 echo ">>> Parando a aplicacao antiga que rodava direto no host (porta 8000)..."
 sudo pkill -f "trabalho_app_financeiro/venv" 2>/dev/null
@@ -33,7 +26,9 @@ rm -rf "$HOME/trabalho_app_financeiro"
 
 echo ""
 echo "============================================================"
-echo " VM zerada. Verificacao:"
-command -v docker >/dev/null 2>&1 && echo "  docker  : AINDA instalado (!)" || echo "  docker  : nao instalado (ok)"
-[ -d "$HOME/trabalho_app_financeiro" ] && echo "  codigo  : ainda presente (!)" || echo "  codigo  : removido (ok)"
+echo " VM zerada. Conferindo (devem estar vazios):"
+echo "--- docker ps ---"
+sudo docker ps
+echo "--- docker images ---"
+sudo docker images
 echo "============================================================"

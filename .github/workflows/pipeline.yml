@@ -70,7 +70,9 @@ jobs:
           PY
 
       # ---- ETAPA E: Analise de qualidade de codigo ----
+      # Roda SEMPRE junto com os testes (mesmo que algum teste falhe).
       - name: Analise de qualidade - Flake8 (erros de codigo)
+        if: always()
         run: |
           echo "## Analise de Qualidade (Flake8 + Pylint)" >> "$GITHUB_STEP_SUMMARY"
           # Falha o build se houver erros graves (sintaxe, variavel indefinida, etc.)
@@ -79,6 +81,7 @@ jobs:
           flake8 app.py --count --max-line-length=200 --statistics --exit-zero
 
       - name: Analise de qualidade - Pylint (nota do codigo)
+        if: always()
         run: |
           pylint app.py --disable=C0301,C0103 --fail-under=7 || true
 

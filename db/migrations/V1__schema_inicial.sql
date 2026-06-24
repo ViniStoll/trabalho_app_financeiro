@@ -24,9 +24,9 @@ CREATE TABLE lancamento (
     situacao VARCHAR(20) NOT NULL         -- 'Pago' ou 'Pendente'
 );
 
--- 3. Usuario padrao para conseguir entrar no sistema
+-- 3. Usuario padrao para conseguir entrar no sistema (login: admin / senha: admin)
 INSERT INTO usuario (nome, login, senha, situacao)
-VALUES ('Administrador', 'admin', '123456', 'Ativo');
+VALUES ('Administrador', 'admin', 'admin', 'Ativo');
 
 -- 4. Alguns lancamentos de exemplo para a tela ja vir com dados
 INSERT INTO lancamento (descricao, data_lancamento, valor, tipo_lancamento, situacao) VALUES
