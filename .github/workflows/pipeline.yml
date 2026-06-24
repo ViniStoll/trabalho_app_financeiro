@@ -1,14 +1,19 @@
 # ============================================================
-# Pipeline de Integracao Continua (CI/CD) - GitHub Actions
+# Pipeline de Integracao Continua (CI) - GitHub Actions
 #
 # Este e o "ambiente de Integracao" do trabalho. A cada push na
 # branch main ele executa, em ordem:
 #   1) Testes automatizados (20 testes) + estatisticas
 #   2) Analise de qualidade de codigo (Flake8 + Pylint)
 #   3) Build da imagem Docker
-#   4) Deploy automatico na Homologacao (via SSH na VM)
+#
+# Quando o pipeline ficar verde, a atualizacao dos ambientes e
+# feita rodando os scripts na VM (scripts/02 para Homologacao e
+# scripts/03 para Producao). O firewall da Univates bloqueia
+# acesso SSH de entrada vindo da nuvem, por isso a atualizacao e
+# disparada por comando na VM (permitido pelo enunciado).
 # ============================================================
-name: Pipeline CI/CD - Financeiro
+name: Pipeline CI - Financeiro
 
 # Dispara a cada push na main (ou manualmente pelo botao "Run workflow")
 on:
@@ -82,20 +87,7 @@ jobs:
         run: |
           docker build -t imagem_financeiro .
           echo "Build da imagem concluido com sucesso." >> "$GITHUB_STEP_SUMMARY"
-
-  # ----------------------------------------------------------
-  # JOB 2: Deploy na Homologacao
-  # So roda se o job de Integracao passar. Roda direto na VM
-  # (runner self-hosted), executando o script que atualiza a
-  # Homologacao. A VM se conecta ao GitHub (saida), entao nao
-  # depende de conexao SSH de entrada (que o firewall da Univates
-  # bloqueia para IPs de nuvem).
-  # ----------------------------------------------------------
-  deploy-homologacao:
-    name: Atualizar Homologacao
-    needs: integracao
-    runs-on: self-hosted
-
-    steps:
-      - name: Atualizar o ambiente de Homologacao
-        run: bash /home/univates/trabalho_app_financeiro/scripts/02_atualizar_homologacao.sh
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Integracao OK. Para promover, rode na VM:" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Homologacao: \`bash scripts/02_atualizar_homologacao.sh\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Producao: \`bash scripts/03_atualizar_producao.sh\`" >> "$GITHUB_STEP_SUMMARY"

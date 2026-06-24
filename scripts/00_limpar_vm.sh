@@ -1,30 +1,39 @@
 #!/bin/bash
 # ============================================================
-# Passo 1 da apresentacao: deixar a VM "zerada".
-# Remove os containers, a imagem e a rede do projeto, e para a
-# aplicacao antiga que rodava direto no host. No final mostra
-# que nao ha nada criado no Docker.
+# PASSO 1 - LIMPEZA COMPLETA DA VM
+#
+# Deixa a VM totalmente zerada: remove containers, imagens e
+# volumes do Docker, DESINSTALA o Docker, apaga o codigo do
+# projeto e para a aplicacao antiga que rodava no host.
+#
+# Este script e auto-suficiente (nao depende de nenhum outro
+# arquivo) e pode ser rodado direto do GitHub:
+#
+#   curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/00_limpar_vm.sh | bash
 # ============================================================
-source "$(dirname "$0")/config.sh"
 
-echo ">>> Parando e removendo os containers do projeto..."
-sudo docker rm -f "$CONT_HOMOLOG" "$CONT_PROD" 2>/dev/null || true
+echo ">>> Removendo containers, imagens, redes e volumes do Docker..."
+if command -v docker >/dev/null 2>&1; then
+    sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null
+    sudo docker rmi -f $(sudo docker images -aq) 2>/dev/null
+    sudo docker system prune -a -f --volumes 2>/dev/null
+fi
 
-echo ">>> Removendo a imagem da aplicacao..."
-sudo docker rmi "$IMAGEM" 2>/dev/null || true
-
-echo ">>> Removendo a rede docker do projeto..."
-sudo docker network rm "$REDE" 2>/dev/null || true
-
-echo ">>> Limpando imagens, caches e volumes nao utilizados..."
-sudo docker system prune -a -f 2>/dev/null || true
+echo ">>> Desinstalando o Docker..."
+sudo systemctl stop docker docker.socket containerd 2>/dev/null
+sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras >/dev/null 2>&1
+sudo apt-get autoremove -y >/dev/null 2>&1
+sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker
 
 echo ">>> Parando a aplicacao antiga que rodava direto no host (porta 8000)..."
-sudo pkill -f "trabalho_app_financeiro/venv" 2>/dev/null || true
+sudo pkill -f "trabalho_app_financeiro/venv" 2>/dev/null
+
+echo ">>> Apagando o codigo do projeto..."
+rm -rf "$HOME/trabalho_app_financeiro"
 
 echo ""
-echo ">>> Estado atual do Docker (deve estar vazio):"
-echo "--- Containers ---"
-sudo docker ps -a 2>/dev/null || echo "(docker nao instalado)"
-echo "--- Imagens ---"
-sudo docker images 2>/dev/null || echo "(docker nao instalado)"
+echo "============================================================"
+echo " VM zerada. Verificacao:"
+command -v docker >/dev/null 2>&1 && echo "  docker  : AINDA instalado (!)" || echo "  docker  : nao instalado (ok)"
+[ -d "$HOME/trabalho_app_financeiro" ] && echo "  codigo  : ainda presente (!)" || echo "  codigo  : removido (ok)"
+echo "============================================================"
