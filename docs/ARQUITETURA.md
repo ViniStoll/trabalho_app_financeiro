@@ -23,7 +23,6 @@ flowchart LR
     end
 
     subgraph VM["🖥️ VM Univates — Ubuntu 24.04 (177.44.248.122)"]
-        RUNNER["Runner self-hosted<br/>(agente de deploy)"]
         subgraph C1["🐳 Container app_homolog :8081"]
             H_APP["Flask (Python)"]
             H_DB[("PostgreSQL")]
@@ -38,9 +37,9 @@ flowchart LR
     DEV -->|"git push"| REPO
     DEV -.->|"registra"| ISSUE
     REPO -->|"dispara"| ACT
-    ACT -->|"aciona deploy<br/>(automatico)"| RUNNER
-    RUNNER -->|"atualiza"| C1
-    ACT -.->|"script manual<br/>(promocao)"| C2
+    ACT -->|"valida (verde)"| DEV
+    DEV -->|"script 02 na VM"| C1
+    DEV -->|"script 03 na VM"| C2
     FLY -->|"migra"| H_DB
     FLY -->|"migra"| P_DB
 ```
@@ -59,11 +58,9 @@ flowchart LR
    |    2. Qualidade (Flake8 + Pylint)
    |    3. Build (Docker)
    |
-   |  (aciona o runner na VM)
-   v
- Runner self-hosted (na VM)
+   |  (quando fica verde, roda-se o script na VM)
    |
-   |  (deploy automatico)               (script manual)
+   |  script 02 (homolog)               script 03 (prod)
    v                                      v
  [ Container HOMOLOGACAO :8081 ]   [ Container PRODUCAO :8082 ]
    Flask + PostgreSQL                Flask + PostgreSQL
@@ -72,12 +69,14 @@ flowchart LR
         +----------------+----------------+
 ```
 
-> **Por que um runner self-hosted?** O firewall de perímetro da Univates
-> bloqueia conexões SSH **de entrada** vindas de IPs de nuvem (como os
-> runners do GitHub). Por isso, em vez do GitHub conectar na VM, a VM roda
-> um *runner self-hosted* que se conecta ao GitHub (saída) e executa o
-> deploy localmente. É a forma robusta e padrão de integrar uma VM com
-> acesso de entrada restrito.
+> **Por que o deploy é por comando (script) e não automático pela nuvem?**
+> O firewall de perímetro da Univates bloqueia conexões **de entrada**
+> vindas de IPs de nuvem (como os runners do GitHub) — testes mostram
+> `connection reset` no handshake SSH. Por isso a atualização dos ambientes
+> é disparada por um **comando rodado na própria VM** (`scripts/02` e
+> `scripts/03`), que baixa do GitHub a versão já validada pela Integração.
+> O enunciado permite isso explicitamente: "é permitido digitar comando para
+> atualização dos ambientes".
 
 ---
 
@@ -98,9 +97,8 @@ flowchart LR
 | Integração (CI/CD) | **GitHub Actions** | Roda na nuvem do GitHub |
 | Testes automatizados | **pytest** (estilo unittest) | 20 testes + estatísticas |
 | Qualidade de código | **Flake8 + Pylint** | "Mess detector" / linter |
-| Automação de infraestrutura | **Shell scripts** + Docker | Instala tudo do zero |
-| Agente de deploy | **Runner self-hosted** do GitHub Actions | Roda na VM (saída → GitHub) |
-| Deploy (transferência) | Runner executa o script na VM | Sem SSH de entrada |
+| Automação de infraestrutura | **Shell scripts** + Docker | `bootstrap.sh` instala tudo do zero |
+| Deploy (transferência) | **Shell scripts** na VM (`02`/`03`) | Baixam do GitHub a versão validada |
 | Notificação | E-mail (SMTP) | Opcional, ao criar/editar lançamento |
 
 ---
@@ -109,9 +107,9 @@ flowchart LR
 
 | Ambiente | Onde roda | Como é atualizado |
 |---|---|---|
-| **Integração** | GitHub Actions (nuvem) | Automático a cada `git push` |
-| **Homologação** | Container `app_homolog` na VM, porta **8081** | Automático (Actions → SSH) após os testes passarem |
-| **Produção** | Container `app_prod` na VM, porta **8082** | Manual: rodar `scripts/03_atualizar_producao.sh` |
+| **Integração** | GitHub Actions (nuvem) | Automático a cada `git push` (testes + qualidade + build) |
+| **Homologação** | Container `app_homolog` na VM, porta **8081** | Rodar `scripts/02_atualizar_homologacao.sh` após o CI ficar verde |
+| **Produção** | Container `app_prod` na VM, porta **8082** | Rodar `scripts/03_atualizar_producao.sh` |
 
 ---
 
@@ -139,6 +137,6 @@ adicionada **sem apagar** a tabela `lancamento` nem os dados existentes.
 | C) Versionamento | Git + GitHub |
 | D) Testes automatizados (20 + estatísticas) | `test_app.py` rodando no GitHub Actions |
 | E) Análise de qualidade | Flake8 + Pylint no GitHub Actions |
-| F) Atualização de Homologação | `scripts/02_atualizar_homologacao.sh` (via Actions) |
-| G) Atualização de Produção | `scripts/03_atualizar_producao.sh` (manual) |
-| H) Criação dos ambientes | `scripts/01_montar_ambientes.sh` |
+| F) Atualização de Homologação | `scripts/02_atualizar_homologacao.sh` |
+| G) Atualização de Produção | `scripts/03_atualizar_producao.sh` |
+| H) Criação dos ambientes | `scripts/bootstrap.sh` → `scripts/01_montar_ambientes.sh` |

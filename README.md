@@ -29,8 +29,9 @@ completo de CI/CD, com ambientes de Integração, Homologação e Produção.
 │   └── V1__schema_inicial.sql
 ├── scripts/                # Automação da infraestrutura
 │   ├── config.sh
-│   ├── 00_limpar_vm.sh
-│   ├── 01_montar_ambientes.sh
+│   ├── 00_limpar_vm.sh         # limpeza completa da VM
+│   ├── bootstrap.sh            # 1 comando: baixa do GitHub e monta tudo
+│   ├── 01_montar_ambientes.sh  # instala Docker, constrói e sobe os ambientes
 │   ├── 02_atualizar_homologacao.sh
 │   └── 03_atualizar_producao.sh
 ├── .github/workflows/
@@ -47,10 +48,17 @@ Veja o passo a passo completo em **[ROTEIRO_APRESENTACAO.md](ROTEIRO_APRESENTACA
 Resumo:
 
 ```bash
-# Na VM, dentro do repositório:
-bash scripts/01_montar_ambientes.sh      # cria Homologação e Produção
-# ... faça a mudança, commit e push (dispara o GitHub Actions) ...
-bash scripts/03_atualizar_producao.sh    # promove para Produção
+# 1. Na VM: limpar tudo (um comando, baixado do GitHub)
+curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/00_limpar_vm.sh | bash
+
+# 2. Na VM: montar tudo do zero (um comando)
+curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/bootstrap.sh | bash
+
+# 3. No seu PC: faça a mudança, commit e push (dispara o GitHub Actions)
+
+# 4. Na VM (após o CI ficar verde): promover para os ambientes
+bash scripts/02_atualizar_homologacao.sh   # Homologação
+bash scripts/03_atualizar_producao.sh      # Produção
 ```
 
 ## Ambientes

@@ -26,50 +26,39 @@ Você vai usar **dois lugares**. Cada passo abaixo está marcado com um ícone:
 > cd ~/trabalho_app_financeiro
 > ```
 
-### Antes da apresentação (conferir 1x)
-
-O deploy automático da Homologação é feito por um **runner self-hosted** do
-GitHub Actions que roda na VM. Confirme que o serviço dele está ativo:
-
-```bash
-sudo systemctl status actions.runner.* --no-pager | grep Active
-```
-
-Deve aparecer `Active: active (running)`. Se não estiver, inicie com:
-
-```bash
-sudo systemctl start actions.runner.*
-```
+> Não há nada para preparar antes: a VM começa zerada e tudo é montado pelos
+> comandos abaixo, que buscam o código do GitHub.
 
 ---
 
-## Passo 1 — 🖥️ (VM) Provar que a VM está zerada
+## Passo 1 — 🖥️ (VM) Limpar a VM completamente
 
-Mostra que não há Docker, containers nem imagens criadas.
+Primeiro, mostre que está tudo zerado (antes de limpar, se quiser):
 
 ```bash
 docker --version || echo "Docker NAO instalado"
-sudo docker ps -a 2>/dev/null || echo "Nenhum container"
-sudo docker images 2>/dev/null || echo "Nenhuma imagem"
 ```
 
-> Esperado: Docker não instalado / nada criado. (A instalação será feita
-> automaticamente pelo script no passo 2 — isso atende o requisito de
-> "instalação automatizada das ferramentas".)
+Agora rode a **limpeza completa** (um comando, baixado do GitHub). Ela
+remove containers, imagens, o Docker e o código do projeto:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/00_limpar_vm.sh | bash
+```
+
+Ao final ele mostra a verificação: **docker não instalado** e **código removido**.
 
 ---
 
-## Passo 2 — 🖥️ (VM) Montar Homologação e Produção (1 script)
+## Passo 2 — 🖥️ (VM) Iniciar o processo (1 único comando)
+
+Este é o comando que **inicia tudo**: baixa o código do GitHub, instala o
+Docker, libera as portas no firewall, constrói a imagem e sobe os 2
+ambientes (homolog e prod) com o banco já criado (Flyway).
 
 ```bash
-cd ~/trabalho_app_financeiro
-git pull
-bash scripts/01_montar_ambientes.sh
+curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/bootstrap.sh | bash
 ```
-
-Esse script faz **tudo sozinho**: instala o Docker, libera as portas no
-firewall, constrói a imagem, sobe os 2 containers (homolog e prod) e aplica
-as migrações do banco (Flyway) nos dois.
 
 Ao final, confirme que os 2 containers estão rodando:
 
@@ -138,7 +127,9 @@ O `git push` **dispara o GitHub Actions** automaticamente.
 
 ---
 
-## Passo 7 — 🌐 (Navegador) Integração + atualização da Homologação
+## Passo 7 — 🌐 + 🖥️ Integração e atualização da Homologação
+
+### 7.1 🌐 Integração (GitHub Actions)
 
 Abra a aba **Actions** do GitHub:
 https://github.com/ViniStoll/trabalho_app_financeiro/actions
@@ -148,10 +139,17 @@ Mostre o pipeline rodando, em ordem:
 1. **20 testes** passando + a tabela de estatísticas (no "Summary" da execução)
 2. **Qualidade** (Flake8 + Pylint)
 3. **Build** da imagem
-4. **Deploy na Homologação** — o job "Atualizar Homologacao" roda no
-   *runner self-hosted* da própria VM e atualiza o ambiente automaticamente.
 
-Quando terminar (verde), volte ao navegador na aba de **Homologação**
+### 7.2 🖥️ Atualizar a Homologação (na VM)
+
+Quando o pipeline ficar **verde**, atualize a Homologação rodando o script
+na VM (ele baixa a versão validada do GitHub e aplica só a migração nova):
+
+```bash
+bash scripts/02_atualizar_homologacao.sh
+```
+
+Volte ao navegador na aba de **Homologação**
 (http://177.44.248.122:8081):
 
 - A label nova já aparece.
