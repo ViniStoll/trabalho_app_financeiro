@@ -85,36 +85,17 @@ jobs:
 
   # ----------------------------------------------------------
   # JOB 2: Deploy na Homologacao
-  # So roda se o job de Integracao passar. Conecta na VM por SSH
-  # e executa o script que atualiza o ambiente de Homologacao.
+  # So roda se o job de Integracao passar. Roda direto na VM
+  # (runner self-hosted), executando o script que atualiza a
+  # Homologacao. A VM se conecta ao GitHub (saida), entao nao
+  # depende de conexao SSH de entrada (que o firewall da Univates
+  # bloqueia para IPs de nuvem).
   # ----------------------------------------------------------
   deploy-homologacao:
     name: Atualizar Homologacao
     needs: integracao
-    runs-on: ubuntu-latest
-    env:
-      VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+    runs-on: self-hosted
 
     steps:
-      # Verifica se a chave SSH da VM ja foi configurada nos Secrets.
-      # Se nao foi, o deploy e pulado (sem quebrar o pipeline).
-      - name: Verificar se o deploy esta configurado
-        id: chave
-        run: |
-          if [ -n "$VM_SSH_KEY" ]; then
-            echo "configurado=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configurado=false" >> "$GITHUB_OUTPUT"
-            echo "Secret VM_SSH_KEY ainda nao configurado. Deploy na Homologacao sera pulado."
-          fi
-
-      - name: Conectar na VM e atualizar a Homologacao
-        if: steps.chave.outputs.configurado == 'true'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 177.44.248.122
-          username: univates
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd ~/trabalho_app_financeiro
-            bash scripts/02_atualizar_homologacao.sh
+      - name: Atualizar o ambiente de Homologacao
+        run: bash /home/univates/trabalho_app_financeiro/scripts/02_atualizar_homologacao.sh
