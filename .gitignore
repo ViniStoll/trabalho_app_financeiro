@@ -1,0 +1,20 @@
+# Ambiente virtual do Python (nao precisa versionar)
+venv/
+.venv/
+env/
+
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+
+# PDFs gerados pela aplicacao em tempo de execucao
+relatorio_filtrado.pdf
+relatorio_financeiro.pdf
+
+# Arquivos do sistema operacional
+.DS_Store
+
+# Relatorios gerados pelos testes / qualidade
+report.xml
+.coverage
+htmlcov/

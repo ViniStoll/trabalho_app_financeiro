@@ -1,0 +1,11 @@
+# Nao copiar estes arquivos/pastas para dentro da imagem Docker
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.github/
+docs/
+scripts/
+*.pdf
+.DS_Store

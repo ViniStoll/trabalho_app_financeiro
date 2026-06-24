@@ -1,0 +1,120 @@
+# ============================================================
+# Pipeline de Integracao Continua (CI/CD) - GitHub Actions
+#
+# Este e o "ambiente de Integracao" do trabalho. A cada push na
+# branch main ele executa, em ordem:
+#   1) Testes automatizados (20 testes) + estatisticas
+#   2) Analise de qualidade de codigo (Flake8 + Pylint)
+#   3) Build da imagem Docker
+#   4) Deploy automatico na Homologacao (via SSH na VM)
+# ============================================================
+name: Pipeline CI/CD - Financeiro
+
+# Dispara a cada push na main (ou manualmente pelo botao "Run workflow")
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ----------------------------------------------------------
+  # JOB 1: Integracao (testes + qualidade + build)
+  # Roda em um runner do proprio GitHub (fora da VM).
+  # ----------------------------------------------------------
+  integracao:
+    name: Testes, Qualidade e Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o codigo do repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar as dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      # ---- ETAPA D: Testes automatizados + estatisticas ----
+      - name: Rodar os 20 testes automatizados
+        run: |
+          pytest test_app.py -v --junitxml=report.xml --cov=app --cov-report=term
+
+      - name: Exibir estatisticas de execucao dos testes
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          raiz = ET.parse('report.xml').getroot()
+          suite = raiz if raiz.tag == 'testsuite' else raiz.find('testsuite')
+          total = int(suite.get('tests', 0))
+          falhas = int(suite.get('failures', 0))
+          erros = int(suite.get('errors', 0))
+          pulados = int(suite.get('skipped', 0))
+          tempo = suite.get('time', '0')
+          passou = total - falhas - erros - pulados
+          print("## Estatisticas dos Testes Automatizados\n")
+          print("| Total | Passou | Falhou | Erros | Pulados | Tempo (s) |")
+          print("|:---:|:---:|:---:|:---:|:---:|:---:|")
+          print(f"| {total} | {passou} | {falhas} | {erros} | {pulados} | {tempo} |")
+          PY
+
+      # ---- ETAPA E: Analise de qualidade de codigo ----
+      - name: Analise de qualidade - Flake8 (erros de codigo)
+        run: |
+          echo "## Analise de Qualidade (Flake8 + Pylint)" >> "$GITHUB_STEP_SUMMARY"
+          # Falha o build se houver erros graves (sintaxe, variavel indefinida, etc.)
+          flake8 app.py --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Relatorio completo de estilo (nao quebra o build, so informa)
+          flake8 app.py --count --max-line-length=200 --statistics --exit-zero
+
+      - name: Analise de qualidade - Pylint (nota do codigo)
+        run: |
+          pylint app.py --disable=C0301,C0103 --fail-under=7 || true
+
+      # ---- ETAPA F: Build da imagem Docker ----
+      - name: Build da imagem Docker (verificacao)
+        run: |
+          docker build -t imagem_financeiro .
+          echo "Build da imagem concluido com sucesso." >> "$GITHUB_STEP_SUMMARY"
+
+  # ----------------------------------------------------------
+  # JOB 2: Deploy na Homologacao
+  # So roda se o job de Integracao passar. Conecta na VM por SSH
+  # e executa o script que atualiza o ambiente de Homologacao.
+  # ----------------------------------------------------------
+  deploy-homologacao:
+    name: Atualizar Homologacao
+    needs: integracao
+    runs-on: ubuntu-latest
+    env:
+      VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+
+    steps:
+      # Verifica se a chave SSH da VM ja foi configurada nos Secrets.
+      # Se nao foi, o deploy e pulado (sem quebrar o pipeline).
+      - name: Verificar se o deploy esta configurado
+        id: chave
+        run: |
+          if [ -n "$VM_SSH_KEY" ]; then
+            echo "configurado=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configurado=false" >> "$GITHUB_OUTPUT"
+            echo "Secret VM_SSH_KEY ainda nao configurado. Deploy na Homologacao sera pulado."
+          fi
+
+      - name: Conectar na VM e atualizar a Homologacao
+        if: steps.chave.outputs.configurado == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 177.44.248.122
+          username: univates
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/trabalho_app_financeiro
+            bash scripts/02_atualizar_homologacao.sh
