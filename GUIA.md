@@ -26,83 +26,60 @@ sudo docker ps
 sudo docker images
 ```
 
-## 2. Sobe SÓ a homologação:
+## 2. Sobe só a homologação:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ViniStoll/trabalho_app_financeiro/main/scripts/bootstrap.sh | bash
 ```
-Só a homologação sobe. A produção ainda NÃO existe (mostro com `sudo docker ps`: só o `app_homolog`).
 
-## 3. Homologação funcionando:
-- Abro http://177.44.248.122:8081 e faço login (admin / admin).
-- Clico em "+ Novo Lançamento", cadastro um item e mostro que aparece na lista.
-
-## 4. Sobe a produção:
+## 3. Sobe a produção:
 ```bash
 cd ~/trabalho_app_financeiro
 bash scripts/subir_producao.sh
 ```
-- Abro http://177.44.248.122:8082, faço login (admin / admin).
-- Cadastro um item e mostro funcionando.
 
-## 5. Faço as mudanças (no PC):
-```bash
-cd "/Users/viniciusstoll/Documents/Univates/Gerencia de Configuração de Software/app_financeiro"
-```
-- **Código:** abro o `app.py` no VSCode e troco a label que o professor pedir. Salvo.
-- **Banco:** copio a migração da tabela categoria:
+## 4. Alterações:
+- **Código:** label
+- **Banco:** tabela categoria
 ```bash
 cp mudanca_exemplo/V2__criar_tabela_categoria.sql db/migrations/
 ```
-- **Erro de propósito:** no `test_app.py` (test_01), descomento a linha do erro:
-```python
-# self.assertEqual(1, 2)   <- descomentar
-```
-Versiono tudo:
+- **Erro proposital:** linha do erro: # self.assertEqual(1, 2)
+
+Versiona:
 ```bash
 git add app.py test_app.py db/migrations/V2__criar_tabela_categoria.sql
 git commit -m "Altera label e cria tabela categoria (closes #1)"
 git push
 ```
 
-## 6. Tento atualizar a homologação (com o erro → barra):
-Na VM:
+## 5. Tenta atualizar a homologação:
 ```bash
 cd ~/trabalho_app_financeiro
 bash scripts/atualizar_homologacao.sh
 ```
-→ roda os testes + qualidade, encontra o erro e **CANCELA** (nada sobe). No GitHub Actions o pipeline também fica vermelho.
 
-Corrijo o erro (no PC, comento a linha de novo no `test_app.py`) e versiono:
+Ajusta o erro e versiona:
 ```bash
 git add test_app.py
 git commit -m "Corrige o teste"
 git push
 ```
+
 Atualizo a homologação de novo:
 ```bash
 bash scripts/atualizar_homologacao.sh
 ```
-→ agora passa e atualiza. No navegador (8081): a página **volta pro login** (reiniciou), faço login, a **label nova** aparece e o **lançamento que cadastrei continua lá** (o banco não foi apagado). Confiro a tabela nova:
+
 ```bash
-sudo docker exec app_homolog su postgres -c "psql -d financeiro -c '\dt'"
+sudo docker exec app_homolog su postgres -c "psql -d financeiro -c '\dt categoria'"
 ```
 
-## 7. Confiro que a produção NÃO mudou e só então atualizo:
-Primeiro mostro que a produção ainda está como antes (não atualizou sozinha):
-- No navegador (8082): a **label antiga** ainda está lá.
-- A tabela categoria ainda **não existe** na produção:
-```bash
-sudo docker exec app_prod su postgres -c "psql -d financeiro -c '\dt'"
-```
-Agora atualizo a produção:
+## 7. Confiro que a produção não mudou e então atualizo:
+Atualizo a produção:
 ```bash
 bash scripts/atualizar_producao.sh
 ```
-No navegador (8082): a label nova aparece, o lançamento que cadastrei continua, e a tabela já existe:
+
 ```bash
-sudo docker exec app_prod su postgres -c "psql -d financeiro -c '\dt'"
+sudo docker exec app_prod su postgres -c "psql -d financeiro -c '\dt categoria'"
 ```
-
----
-
-> Lembrete: todo comando na VM é rodado de dentro de `~/trabalho_app_financeiro`. Se cair na home, é só `cd ~/trabalho_app_financeiro`.
