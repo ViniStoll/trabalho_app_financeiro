@@ -7,6 +7,18 @@ Uso **dois lugares** durante a apresentação:
 - **Meu computador** — a pasta do projeto. É onde eu altero o código e dou `git push`.
 - **A VM** — `ssh univates@177.44.248.122`. É onde eu monto os ambientes e atualizo homologação/produção.
 
+Logo no início, abro os dois terminais:
+
+```bash
+# No meu computador — entrar na pasta do projeto:
+cd "/Users/viniciusstoll/Documents/Univates/Gerencia de Configuração de Software/app_financeiro"
+```
+
+```bash
+# Na VM:
+ssh univates@177.44.248.122
+```
+
 Endereços e acessos:
 
 - Homologação: http://177.44.248.122:8081
