@@ -1,4 +1,4 @@
-# Ambiente virtual do Python (nao precisa versionar)
+# Ambiente virtual do Python
 venv/
 .venv/
 .venv_testes/
@@ -8,7 +8,7 @@ env/
 __pycache__/
 *.pyc
 
-# PDFs gerados pela aplicacao em tempo de execucao
+# PDFs gerados pela aplicacao
 relatorio_filtrado.pdf
 relatorio_financeiro.pdf
 

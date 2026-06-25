@@ -1,11 +1,6 @@
--- ============================================================
 -- Migracao V1 - Schema inicial do sistema financeiro
--- O Flyway executa este arquivo apenas UMA vez e guarda o
--- registro na tabela flyway_schema_history. Assim o banco
--- fica versionado (cada alteracao vira um novo arquivo V2, V3...).
--- ============================================================
 
--- 1. Tabela de usuarios (login do sistema)
+-- Tabela de usuarios
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -14,21 +9,21 @@ CREATE TABLE usuario (
     situacao VARCHAR(20) NOT NULL
 );
 
--- 2. Tabela de lancamentos financeiros
+-- Tabela de lancamentos financeiros
 CREATE TABLE lancamento (
     id SERIAL PRIMARY KEY,
     descricao VARCHAR(255) NOT NULL,
     data_lancamento DATE NOT NULL,
     valor NUMERIC(10, 2) NOT NULL,
-    tipo_lancamento VARCHAR(20) NOT NULL, -- 'Receita' ou 'Despesa'
-    situacao VARCHAR(20) NOT NULL         -- 'Pago' ou 'Pendente'
+    tipo_lancamento VARCHAR(20) NOT NULL, 
+    situacao VARCHAR(20) NOT NULL 
 );
 
--- 3. Usuario padrao para conseguir entrar no sistema (login: admin / senha: admin)
+-- Usuario padrao do sistema
 INSERT INTO usuario (nome, login, senha, situacao)
 VALUES ('Administrador', 'admin', 'admin', 'Ativo');
 
--- 4. Alguns lancamentos de exemplo para a tela ja vir com dados
+-- Lancamentos de exemplo
 INSERT INTO lancamento (descricao, data_lancamento, valor, tipo_lancamento, situacao) VALUES
 ('Salário', '2026-03-05', 4500.00, 'Receita', 'Pago'),
 ('Conta de Luz', '2026-03-10', 150.50, 'Despesa', 'Pago'),

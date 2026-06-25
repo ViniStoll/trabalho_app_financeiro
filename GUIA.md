@@ -24,6 +24,7 @@ sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null; sudo docker rmi -f $(sudo d
 ```bash
 sudo docker ps
 sudo docker images
+sudo docker volume ls
 ```
 
 ## 2. Sobe só a homologação:
@@ -74,7 +75,7 @@ bash scripts/atualizar_homologacao.sh
 sudo docker exec app_homolog su postgres -c "psql -d financeiro -c '\dt categoria'"
 ```
 
-## 7. Confiro que a produção não mudou e então atualizo:
+## 6. Confiro que a produção não mudou e então atualizo:
 Atualizo a produção:
 ```bash
 bash scripts/atualizar_producao.sh

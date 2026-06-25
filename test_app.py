@@ -2,21 +2,10 @@ import unittest
 from unittest.mock import patch, MagicMock
 from app import app
 
-
-# ------------------------------------------------------------------
-# Dublês de teste (no mesmo estilo dos exemplos da aula 8).
-# Servem para substituir partes "de verdade" (banco, e-mail) durante
-# os testes. Os 4 tipos vistos em aula: Dummy, Stub, Fake e Mock.
-# ------------------------------------------------------------------
-
-# DUMMY: objeto que só é passado para preencher, mas não faz nada.
 class EmailDummy:
     def enviar(self, *args):
-        pass  # nao faz nada
+        pass 
 
-
-# FAKE: uma implementação "de mentira" e simples (guarda em memória,
-# no lugar de um banco de dados de verdade).
 class BancoFake:
     def __init__(self):
         self.itens = []
@@ -27,27 +16,18 @@ class BancoFake:
     def listar(self):
         return self.itens
 
-
 class TestAppFinanceiro(unittest.TestCase):
 
     def setUp(self):
-        # Ativa o modo de teste no app principal
         app.config['TESTING'] = True
-        # Cria um "cliente de teste" para simular o navegador
         self.app = app.test_client()
-        # Ja entra "logado" para conseguir testar as telas internas
         with self.app.session_transaction() as sessao:
             sessao['logado'] = True
 
-    # ==============================================================
-    # TESTES BASICOS (configuracao e tela de login)
-    # ==============================================================
+    # Testes de tela de login
     def test_01_app_em_modo_teste(self):
         """1. O modo de testes do Flask deve estar ativo"""
         self.assertTrue(app.config['TESTING'])
-        # ===== ERRO PROPOSITAL (DEMONSTRACAO DO CI/CD) =====
-        # Para mostrar o pipeline barrando o deploy, descomente a linha abaixo,
-        # faca commit e push. Depois comente de novo para corrigir.
         # self.assertEqual(1, 2)
 
     def test_02_login_abre(self):
@@ -60,13 +40,9 @@ class TestAppFinanceiro(unittest.TestCase):
         resposta = self.app.get('/')
         self.assertIn(b'Financeiro Login', resposta.data)
 
-    # ==============================================================
-    # STUB - troco o banco por um duble que devolve um dado PRONTO
-    # ==============================================================
     @patch('app.get_db_connection')
     def test_04_login_errado(self, banco_falso):
         """4. Login/senha errados devem ser recusados"""
-        # o stub devolve "nenhum usuario encontrado"
         cursor = MagicMock()
         cursor.fetchone.return_value = None
         banco_falso.return_value.cursor.return_value = cursor
@@ -77,7 +53,6 @@ class TestAppFinanceiro(unittest.TestCase):
     @patch('app.get_db_connection')
     def test_05_login_certo(self, banco_falso):
         """5. Login certo deve redirecionar (HTTP 302) para a listagem"""
-        # o stub devolve um usuario pronto
         cursor = MagicMock()
         cursor.fetchone.return_value = ('admin', 'admin')
         banco_falso.return_value.cursor.return_value = cursor
@@ -89,7 +64,6 @@ class TestAppFinanceiro(unittest.TestCase):
     @patch('app.get_db_connection')
     def test_06_listagem_mostra_dado(self, banco_falso):
         """6. A listagem deve mostrar o lancamento que o banco devolveu"""
-        # o stub devolve uma linha pronta
         cursor = MagicMock()
         cursor.fetchall.return_value = [(1, 'Conta de Luz', '2026-04-10', 150.0, 'Despesa', 'Pendente')]
         banco_falso.return_value.cursor.return_value = cursor
@@ -117,9 +91,6 @@ class TestAppFinanceiro(unittest.TestCase):
         resposta = self.app.get('/editar/1')
         self.assertIn(b'Venda', resposta.data)
 
-    # ==============================================================
-    # MOCK - troco a dependencia e VERIFICO se ela foi chamada
-    # ==============================================================
     @patch('app.enviar_email_notificacao')
     @patch('app.get_db_connection')
     def test_09_criar_chama_email(self, banco_falso, email_mock):
@@ -128,7 +99,6 @@ class TestAppFinanceiro(unittest.TestCase):
             descricao='Teste E-mail', data_lancamento='2026-05-01',
             valor='100', tipo_lancamento='Receita', situacao='Pago'
         ))
-        # o mock verifica que o e-mail foi chamado com os dados certos
         email_mock.assert_called_once_with('criado', 'Teste E-mail')
 
     @patch('app.enviar_email_notificacao')
@@ -141,9 +111,6 @@ class TestAppFinanceiro(unittest.TestCase):
         ))
         email_mock.assert_called_once_with('atualizado', 'Editado')
 
-    # ==============================================================
-    # FAKE - um banco "de mentira" em memoria (sem banco de verdade)
-    # ==============================================================
     def test_11_fake_salva_e_lista(self):
         """11. O banco fake deve guardar e devolver os itens"""
         banco = BancoFake()
@@ -156,9 +123,6 @@ class TestAppFinanceiro(unittest.TestCase):
         banco = BancoFake()
         self.assertEqual(len(banco.listar()), 0)
 
-    # ==============================================================
-    # DUMMY - objeto que so e passado, mas nao e usado de verdade
-    # ==============================================================
     def test_13_dummy_nao_faz_nada(self):
         """13. O e-mail dummy pode ser chamado sem nenhum efeito"""
         email = EmailDummy()
@@ -173,9 +137,6 @@ class TestAppFinanceiro(unittest.TestCase):
         ))
         self.assertEqual(resposta.status_code, 302)
 
-    # ==============================================================
-    # ROTAS E CRUD (testes diretos das telas do sistema)
-    # ==============================================================
     def test_15_novo_abre(self):
         """15. A tela de novo lancamento deve abrir"""
         resposta = self.app.get('/novo')
@@ -222,7 +183,6 @@ class TestAppFinanceiro(unittest.TestCase):
         """20. Uma URL que nao existe deve dar erro 404"""
         resposta = self.app.get('/pagina_que_nao_existe')
         self.assertEqual(resposta.status_code, 404)
-
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

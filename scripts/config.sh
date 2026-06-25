@@ -1,11 +1,6 @@
-#!/bin/bash
-# ============================================================
 # Configuracoes compartilhadas por todos os scripts.
-# Este arquivo nao roda sozinho: ele e "carregado" pelos outros
-# scripts com o comando 'source'.
-# ============================================================
 
-# Descobre a pasta do projeto automaticamente (pasta acima de /scripts)
+# Descobre a pasta do projeto automaticamente
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJETO_DIR="$(dirname "$SCRIPT_DIR")"
 
@@ -23,21 +18,16 @@ PORTA_HOMOLOG=8081
 CONT_PROD="app_prod"
 PORTA_PROD=8082
 
-# Pasta com as migracoes do banco (lidas pelo Flyway)
+# Pasta com as migracoes do banco
 MIGRACOES_DIR="$PROJETO_DIR/db/migrations"
 
-# Imagem oficial do Flyway (ferramenta de versionamento do banco)
+# Imagem oficial do Flyway 
 FLYWAY_IMG="flyway/flyway:10"
 
 # Ambiente virtual Python usado so para rodar os testes na VM
 VENV_TESTES="$PROJETO_DIR/.venv_testes"
 
-# ------------------------------------------------------------
-# Funcao que roda os 20 testes automatizados E a analise de
-# qualidade do codigo. Cria o ambiente na primeira vez (instala
-# as dependencias). Retorna 0 se passar tudo, diferente de 0 se
-# algo falhar. E usada para BLOQUEAR o deploy quando ha erro.
-# ------------------------------------------------------------
+# Funcao que roda os 20 testes automatizados e a analise de qualidade do codigo.
 rodar_testes() {
     if [ ! -d "$VENV_TESTES" ]; then
         echo "    (preparando o ambiente de testes pela primeira vez...)"
@@ -45,22 +35,14 @@ rodar_testes() {
         "$VENV_TESTES/bin/pip" install -q --upgrade pip
         "$VENV_TESTES/bin/pip" install -q -r "$PROJETO_DIR/requirements.txt" -r "$PROJETO_DIR/requirements-dev.txt"
     fi
-    # Roda sempre de DENTRO da pasta do projeto. Isso e importante porque a
-    # tela de exportar PDF grava o arquivo na pasta atual; rodando de outro
-    # lugar (ex: a home) o teste do PDF nao acha o arquivo e falha.
     # 1) testes automatizados
     ( cd "$PROJETO_DIR" && "$VENV_TESTES/bin/pytest" test_app.py -q ) || return 1
-    # 2) qualidade do codigo (erros graves: sintaxe, variavel indefinida, etc.)
+    # 2) qualidade do codigo
     ( cd "$PROJETO_DIR" && "$VENV_TESTES/bin/flake8" app.py --select=E9,F63,F7,F82 ) || return 1
     return 0
 }
 
-# ------------------------------------------------------------
 # Funcao que aplica as migracoes do banco em um container.
-# Recebe como parametro o nome do container alvo (ex: app_homolog).
-# O Flyway aplica SOMENTE as migracoes que ainda nao foram
-# executadas, sem apagar os dados existentes.
-# ------------------------------------------------------------
 flyway_migrate() {
     local alvo="$1"
     sudo docker run --rm \
@@ -74,11 +56,7 @@ flyway_migrate() {
         migrate
 }
 
-# ------------------------------------------------------------
 # Funcao que espera a aplicacao responder em uma porta.
-# Apos um restart, o container leva alguns segundos para o
-# PostgreSQL e o Flask ficarem prontos.
-# ------------------------------------------------------------
 esperar_app() {
     local porta="$1"
     echo "    Aguardando a aplicacao responder na porta $porta..."

@@ -8,26 +8,16 @@ from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 
-# Chave usada para assinar a sessao de login. Ela e gerada de novo toda vez
-# que a aplicacao inicia. Assim, quando atualizamos o sistema (que reinicia
-# a aplicacao), a sessao "cai" e o usuario volta para a tela de login.
 app.secret_key = os.urandom(24)
 
-# ------------------------------------------------------------------
 # Configuracoes do Banco de Dados
-# Os valores vem de variaveis de ambiente. Assim a MESMA imagem roda
-# em Homologacao e Producao apenas mudando as variaveis, e nada de
-# senha fica "chumbado" no codigo. Se a variavel nao existir, usa o
-# valor padrao (que e o do banco que roda dentro do proprio container).
-# ------------------------------------------------------------------
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 DB_NAME = os.environ.get("DB_NAME", "financeiro")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASS = os.environ.get("DB_PASS", "postgres")
 DB_PORT = os.environ.get("DB_PORT", "5432")
 
-# Configuracoes do envio de e-mail (tambem via variaveis de ambiente).
-# Se nao estiverem configuradas, o envio simplesmente e ignorado.
+# Configuracoes do envio de e-mail
 EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE")
 EMAIL_SENHA = os.environ.get("EMAIL_SENHA")
 EMAIL_DESTINATARIO = os.environ.get("EMAIL_DESTINATARIO", EMAIL_REMETENTE)
@@ -36,15 +26,11 @@ EMAIL_DESTINATARIO = os.environ.get("EMAIL_DESTINATARIO", EMAIL_REMETENTE)
 def get_db_connection():
     return psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
 
-# --- FUNCOES AUXILIARES (E-MAIL E PDF) ---
-
 def enviar_email_notificacao(acao, descricao):
-    # Se o e-mail nao foi configurado nas variaveis de ambiente, nao faz nada.
     if not EMAIL_REMETENTE or not EMAIL_SENHA:
         print("DEBUG: Envio de e-mail desativado (configure EMAIL_REMETENTE e EMAIL_SENHA).")
         return
 
-    # --- MONTAGEM DA MENSAGEM ---
     msg = MIMEMultipart()
     msg['From'] = EMAIL_REMETENTE
     msg['To'] = EMAIL_DESTINATARIO
@@ -60,19 +46,15 @@ def enviar_email_notificacao(acao, descricao):
     """
     msg.attach(MIMEText(corpo, 'plain'))
 
-    # --- PROCESSO DE ENVIO ---
     try:
-        # Liga ao servidor do Gmail (Porta 587 para TLS)
         server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()  # Encripta a ligacao
+        server.starttls() 
         server.login(EMAIL_REMETENTE, EMAIL_SENHA)
         server.sendmail(EMAIL_REMETENTE, EMAIL_DESTINATARIO, msg.as_string())
         server.quit()
         print(f"DEBUG: E-mail de {acao} enviado com sucesso!")
     except Exception as e:
         print(f"DEBUG: Erro ao enviar e-mail: {e}")
-
-# --- ROTAS DA APLICACAO ---
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -116,7 +98,7 @@ def listagem():
     if not session.get('logado'):
         return redirect(url_for('login'))
     try:
-        # Captura os filtros da URL (ex: ?data=2026-03-05&status=Pago)
+        # Captura os filtros da URL
         filtro_data = request.args.get('data')
         filtro_status = request.args.get('status')
 
@@ -143,7 +125,7 @@ def listagem():
         <body style="font-family: sans-serif; padding: 40px; background: #f4f7f6;">
             <div style="max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
                 <h2 style="color: #333; display: flex; justify-content: space-between;">
-                    Meu Financeiro
+                    Meus Lançamentos
                     <a href="/novo" style="font-size: 16px; background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Novo Lançamento</a>
                 </h2>
 
@@ -307,7 +289,7 @@ def exportar_pdf():
     if not session.get('logado'):
         return redirect(url_for('login'))
     try:
-        # 1. Captura os mesmos filtros que a listagem usa
+        # Captura os mesmos filtros que a listagem usa
         filtro_data = request.args.get('data')
         filtro_status = request.args.get('status')
 
@@ -323,7 +305,7 @@ def exportar_pdf():
 
         query += " ORDER BY data_lancamento DESC"
 
-        # 2. Busca os dados FILTRADOS no banco
+        # Busca os dados filtrados no banco
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(query, tuple(params))
@@ -331,7 +313,7 @@ def exportar_pdf():
         cur.close()
         conn.close()
 
-        # 3. Cria o arquivo PDF
+        # Cria o arquivo PDF
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", style='B', size=16)
@@ -373,7 +355,6 @@ def exportar_pdf():
         return f"Erro ao gerar PDF: {e}"
 
 if __name__ == '__main__':
-    # A porta e o modo debug tambem podem vir de variaveis de ambiente.
     porta = int(os.environ.get("APP_PORT", 8000))
     modo_debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
     app.run(host='0.0.0.0', port=porta, debug=modo_debug)

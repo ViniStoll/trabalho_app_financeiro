@@ -1,12 +1,4 @@
-#!/bin/bash
-# ============================================================
 # ZERAR A VM
-#
-# Remove TUDO que foi criado no Docker (containers, imagens,
-# volumes e redes) e apaga o codigo do projeto. O Docker NAO e
-# desinstalado, para os comandos 'docker ps' e 'docker images'
-# continuarem funcionando e mostrarem que esta tudo vazio.
-# ============================================================
 
 echo ">>> Removendo containers, imagens, volumes e redes do Docker..."
 sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null

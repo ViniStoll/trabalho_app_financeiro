@@ -1,31 +1,14 @@
-# ============================================================
 # Pipeline de Integracao Continua (CI) - GitHub Actions
-#
-# Este e o "ambiente de Integracao" do trabalho. A cada push na
-# branch main ele executa, em ordem:
-#   1) Testes automatizados (20 testes) + estatisticas
-#   2) Analise de qualidade de codigo (Flake8 + Pylint)
-#   3) Build da imagem Docker
-#
-# Quando o pipeline ficar verde, a atualizacao dos ambientes e
-# feita rodando os scripts na VM (scripts/02 para Homologacao e
-# scripts/03 para Producao). O firewall da Univates bloqueia
-# acesso SSH de entrada vindo da nuvem, por isso a atualizacao e
-# disparada por comando na VM (permitido pelo enunciado).
-# ============================================================
 name: Pipeline CI - Financeiro
 
-# Dispara a cada push na main (ou manualmente pelo botao "Run workflow")
+# Dispara a cada push na main
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 jobs:
-  # ----------------------------------------------------------
-  # JOB 1: Integracao (testes + qualidade + build)
-  # Roda em um runner do proprio GitHub (fora da VM).
-  # ----------------------------------------------------------
+  # Integracao (testes + qualidade + build)
   integracao:
     name: Testes, Qualidade e Build
     runs-on: ubuntu-latest
@@ -45,7 +28,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      # ---- ETAPA D: Testes automatizados + estatisticas ----
+      # Testes automatizados e estatisticas
       - name: Rodar os 20 testes automatizados
         run: |
           pytest test_app.py -v --junitxml=report.xml --cov=app --cov-report=term
@@ -69,8 +52,7 @@ jobs:
           print(f"| {total} | {passou} | {falhas} | {erros} | {pulados} | {tempo} |")
           PY
 
-      # ---- ETAPA E: Analise de qualidade de codigo ----
-      # Roda SEMPRE junto com os testes (mesmo que algum teste falhe).
+      # Analise de qualidade de codigo
       - name: Analise de qualidade - Flake8 (erros de codigo)
         if: always()
         run: |
@@ -85,12 +67,12 @@ jobs:
         run: |
           pylint app.py --disable=C0301,C0103 --fail-under=7 || true
 
-      # ---- ETAPA F: Build da imagem Docker ----
+      # Build da imagem Docker
       - name: Build da imagem Docker (verificacao)
         run: |
           docker build -t imagem_financeiro .
           echo "Build da imagem concluido com sucesso." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Integracao OK. Para promover, rode na VM:" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Homologacao: \`bash scripts/02_atualizar_homologacao.sh\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Producao: \`bash scripts/03_atualizar_producao.sh\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Homologacao: \`bash scripts/atualizar_homologacao.sh\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Producao: \`bash scripts/atualizar_producao.sh\`" >> "$GITHUB_STEP_SUMMARY"
