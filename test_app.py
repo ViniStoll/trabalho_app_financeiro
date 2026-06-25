@@ -17,6 +17,10 @@ class TestAppFinanceiro(unittest.TestCase):
     def test_01_app_is_testing(self):
         """1. Testa se o modo de testes do Flask está ativo"""
         self.assertTrue(app.config['TESTING'])
+        # ===== ERRO PROPOSITAL (DEMONSTRACAO DO CI/CD) =====
+        # Para mostrar o pipeline barrando o deploy, descomente a linha abaixo,
+        # faca commit e push. Depois comente de novo para corrigir.
+        # self.assertEqual(1, 2)
 
     def test_02_login_route_get(self):
         """2. Testa se a página de login carrega corretamente (Status 200)"""
