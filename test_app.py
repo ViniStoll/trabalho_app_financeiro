@@ -28,7 +28,6 @@ class TestAppFinanceiro(unittest.TestCase):
     def test_01_app_em_modo_teste(self):
         """1. O modo de testes do Flask deve estar ativo"""
         self.assertTrue(app.config['TESTING'])
-        # self.assertEqual(1, 2)
 
     def test_02_login_abre(self):
         """2. A pagina de login deve carregar (HTTP 200)"""

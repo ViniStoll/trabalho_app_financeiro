@@ -44,11 +44,11 @@ bash scripts/subir_producao.sh
 ```bash
 cp mudanca_exemplo/V2__criar_tabela_categoria.sql db/migrations/
 ```
-- **Erro proposital:** linha do erro: # self.assertEqual(1, 2)
+- **Erro proposital (qualidade):** no `app.py`, função `logout`, descomente a linha `# configuracao_invalida`
 
 Versiona:
 ```bash
-git add app.py test_app.py db/migrations/V2__criar_tabela_categoria.sql
+git add app.py db/migrations/V2__criar_tabela_categoria.sql
 git commit -m "Altera label e cria tabela categoria (closes #1)"
 git push
 ```
@@ -59,10 +59,10 @@ cd ~/trabalho_app_financeiro
 bash scripts/atualizar_homologacao.sh
 ```
 
-Ajusta o erro e versiona:
+Ajusta o erro (comenta de novo a linha no `app.py`) e versiona:
 ```bash
-git add test_app.py
-git commit -m "Corrige o teste"
+git add app.py
+git commit -m "Corrige o erro"
 git push
 ```
 

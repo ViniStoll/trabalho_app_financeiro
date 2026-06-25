@@ -88,7 +88,8 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # Limpa a sessao e volta para a tela de login.
+    # erro proposital de qualidade: descomente a linha abaixo para o CI/CD barrar
+    # configuracao_invalida
     session.clear()
     return redirect(url_for('login'))
 
