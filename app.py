@@ -126,7 +126,7 @@ def listagem():
         <body style="font-family: sans-serif; padding: 40px; background: #f4f7f6;">
             <div style="max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
                 <h2 style="color: #333; display: flex; justify-content: space-between;">
-                    Meu Financeiro
+                    Meus Lançamentos
                     <a href="/novo" style="font-size: 16px; background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Novo Lançamento</a>
                 </h2>
 
