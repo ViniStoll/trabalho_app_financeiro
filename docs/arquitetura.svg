@@ -1,162 +1,133 @@
-<svg viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" role="img">
-  <title>Como o ambiente do sistema financeiro foi montado</title>
-  <desc>O codigo sai do meu computador para o GitHub, que roda testes, qualidade e build. Na VM Ubuntu, o Docker constroi uma imagem (Ubuntu, Python, Flask, PostgreSQL, Flyway) e a partir dela sobe dois containers: Homologacao e Producao.</desc>
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" role="img">
+  <title>Arquitetura do fluxo CI/CD do sistema financeiro</title>
+  <desc>Do computador o codigo vai para o GitHub (repositorio e Actions com testes, qualidade e build) e e implantado por script na VM, onde o Docker cria uma imagem e a partir dela sobe dois containers: Homologacao e Producao.</desc>
 
   <defs>
     <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
       <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
     </marker>
     <g id="db">
-      <ellipse cx="12" cy="6" rx="11" ry="4" fill="#5a8db3"/>
-      <rect x="1" y="6" width="22" height="15" fill="#336791"/>
-      <ellipse cx="12" cy="21" rx="11" ry="4" fill="#2a5570"/>
-      <ellipse cx="12" cy="6" rx="11" ry="4" fill="#6c9cbf"/>
+      <ellipse cx="11" cy="5" rx="10" ry="3.5" fill="#5a8db3"/>
+      <rect x="1" y="5" width="20" height="13" fill="#336791"/>
+      <ellipse cx="11" cy="18" rx="10" ry="3.5" fill="#2a5570"/>
+      <ellipse cx="11" cy="5" rx="10" ry="3.5" fill="#6c9cbf"/>
     </g>
     <g id="flask">
-      <path d="M10 3 H14 V11 L20 23 Q20.5 25 18 25 H6 Q3.5 25 4 23 L10 11 Z" fill="#fff" stroke="#0b1324" stroke-width="2" stroke-linejoin="round"/>
-      <line x1="9" y1="3" x2="15" y2="3" stroke="#0b1324" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M7.4 17 H16.6 L18.4 21 H5.6 Z" fill="#16a34a"/>
+      <path d="M9 3 H13 V10 L18 21 Q18.5 23 16 23 H6 Q3.5 23 4 21 L9 10 Z" fill="#fff" stroke="#0b1324" stroke-width="1.8" stroke-linejoin="round"/>
+      <line x1="8" y1="3" x2="14" y2="3" stroke="#0b1324" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M7 16 H15 L16.5 20 H5.5 Z" fill="#16a34a"/>
     </g>
     <g id="docker">
-      <rect x="3" y="9" width="5" height="5" fill="#2496ED"/>
-      <rect x="9" y="9" width="5" height="5" fill="#2496ED"/>
-      <rect x="15" y="9" width="5" height="5" fill="#2496ED"/>
-      <rect x="9" y="3" width="5" height="5" fill="#2496ED"/>
-      <path d="M0 15 H26 Q24 21 17 21 H7 Q1 21 0 15 Z" fill="#2496ED"/>
+      <rect x="3" y="8" width="4.5" height="4.5" fill="#2496ED"/>
+      <rect x="8.5" y="8" width="4.5" height="4.5" fill="#2496ED"/>
+      <rect x="14" y="8" width="4.5" height="4.5" fill="#2496ED"/>
+      <rect x="8.5" y="2.5" width="4.5" height="4.5" fill="#2496ED"/>
+      <path d="M0 13 H23 Q21 19 15 19 H6 Q1 19 0 13 Z" fill="#2496ED"/>
     </g>
     <g id="ubuntu">
-      <circle cx="12" cy="12" r="11" fill="#E95420"/>
-      <circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2"/>
-      <circle cx="20.5" cy="12" r="2" fill="#fff"/>
-      <circle cx="7.5" cy="5.5" r="2" fill="#fff"/>
-      <circle cx="7.5" cy="18.5" r="2" fill="#fff"/>
+      <circle cx="11" cy="11" r="10" fill="#E95420"/>
+      <circle cx="11" cy="11" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/>
+      <circle cx="18.5" cy="11" r="1.8" fill="#fff"/>
+      <circle cx="7" cy="5" r="1.8" fill="#fff"/>
+      <circle cx="7" cy="17" r="1.8" fill="#fff"/>
     </g>
     <g id="py">
-      <rect x="1" y="1" width="22" height="22" rx="6" fill="#3776AB"/>
-      <text x="12" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#FFD43B">Py</text>
+      <rect x="1" y="1" width="20" height="20" rx="5" fill="#3776AB"/>
+      <text x="11" y="15" text-anchor="middle" font-size="10" font-weight="700" fill="#FFD43B">Py</text>
     </g>
     <g id="fly">
-      <circle cx="12" cy="12" r="11" fill="#CC0200"/>
-      <path d="M7 12 H15 M12 8 L16 12 L12 16" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="11" cy="11" r="10" fill="#CC0200"/>
+      <path d="M6 11 H14 M11 7 L15 11 L11 15" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </g>
     <g id="github">
-      <circle cx="14" cy="14" r="14" fill="#181717"/>
-      <circle cx="9" cy="8" r="2.4" fill="none" stroke="#fff" stroke-width="1.8"/>
-      <circle cx="9" cy="20" r="2.4" fill="none" stroke="#fff" stroke-width="1.8"/>
-      <circle cx="20" cy="10" r="2.4" fill="none" stroke="#fff" stroke-width="1.8"/>
-      <path d="M9 10.4 V17.6 M9.4 12 Q10 13 12 13 L17.6 12" stroke="#fff" stroke-width="1.7" fill="none"/>
+      <circle cx="13" cy="13" r="13" fill="#181717"/>
+      <circle cx="8.5" cy="8" r="2.2" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <circle cx="8.5" cy="18" r="2.2" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <circle cx="18" cy="9.5" r="2.2" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <path d="M8.5 10 V16 M8.9 11.5 Q9.5 12.5 11 12.5 L16 11.5" stroke="#fff" stroke-width="1.5" fill="none"/>
     </g>
   </defs>
 
-  <rect x="0" y="0" width="1120" height="760" fill="#ffffff"/>
-  <text x="560" y="40" text-anchor="middle" font-size="25" font-weight="800" fill="#0f172a">Como o ambiente foi montado</text>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="38" text-anchor="middle" font-size="22" font-weight="800" fill="#0f172a">Arquitetura do fluxo CI/CD</text>
 
-  <!-- ===== ORIGEM (computador + github) ===== -->
-  <rect x="40" y="64" width="300" height="74" rx="12" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <use href="#py" x="56" y="89"/>
-  <text x="92" y="96" font-size="15" font-weight="700" fill="#0f172a">Meu Computador</text>
-  <text x="92" y="116" font-size="12.5" fill="#475569">Edito o código (Python/Flask)</text>
-  <text x="92" y="132" font-size="12.5" fill="#475569">e faço git push</text>
+  <!-- Origem: computador + github -->
+  <rect x="50" y="62" width="250" height="64" rx="12" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <use href="#py" x="66" y="82"/>
+  <text x="100" y="90" font-size="14.5" font-weight="700" fill="#0f172a">Meu Computador</text>
+  <text x="100" y="111" font-size="12" fill="#64748b">edito o código e faço git push</text>
 
-  <line x1="344" y1="101" x2="392" y2="101" stroke="#64748b" stroke-width="2.5" marker-end="url(#ar)"/>
-  <text x="368" y="93" text-anchor="middle" font-size="10.5" fill="#64748b">push</text>
+  <line x1="302" y1="94" x2="356" y2="94" stroke="#64748b" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="329" y="86" text-anchor="middle" font-size="10.5" fill="#64748b">push</text>
 
-  <rect x="396" y="64" width="430" height="74" rx="12" fill="#eef2ff" stroke="#c7d2fe"/>
-  <use href="#github" x="410" y="87"/>
-  <text x="448" y="92" font-size="15" font-weight="700" fill="#0f172a">GitHub — Integração</text>
-  <text x="448" y="112" font-size="12.5" fill="#334155">Repositório (Git) + GitHub Actions</text>
-  <text x="448" y="129" font-size="12.5" fill="#334155">20 testes (pytest) · Flake8/Pylint · build</text>
+  <rect x="358" y="62" width="430" height="64" rx="12" fill="#eef2ff" stroke="#c7d2fe"/>
+  <use href="#github" x="374" y="81"/>
+  <text x="414" y="88" font-size="14.5" font-weight="700" fill="#0f172a">GitHub</text>
+  <text x="414" y="109" font-size="11.5" fill="#334155">Repositório + Actions: testes · qualidade · build</text>
 
-  <line x1="610" y1="138" x2="610" y2="182" stroke="#64748b" stroke-width="2.5" marker-end="url(#ar)"/>
-  <text x="620" y="166" font-size="11.5" fill="#64748b">deploy por script (rodado na VM)</text>
+  <line x1="573" y1="126" x2="573" y2="170" stroke="#64748b" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="586" y="152" font-size="11" fill="#64748b">implanta por script (na VM)</text>
 
-  <!-- ===== VM (HERO) ===== -->
-  <rect x="40" y="188" width="1040" height="488" rx="16" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
-  <use href="#ubuntu" x="62" y="200"/>
-  <text x="94" y="218" font-size="18" font-weight="800" fill="#0f172a">VM Univates — Ubuntu 24.04</text>
-  <text x="94" y="238" font-size="12.5" fill="#64748b">servidor onde tudo roda · IP 177.44.248.122</text>
+  <!-- VM -->
+  <rect x="50" y="176" width="900" height="330" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <use href="#ubuntu" x="70" y="190"/>
+  <text x="102" y="205" font-size="16" font-weight="800" fill="#0f172a">VM — Ubuntu 24.04</text>
 
-  <!-- Zona Docker -->
-  <rect x="64" y="252" width="992" height="404" rx="14" fill="#eff6ff" stroke="#93c5fd"/>
-  <use href="#docker" x="84" y="270"/>
-  <text x="118" y="285" font-size="16" font-weight="700" fill="#075985">Docker</text>
+  <!-- Docker -->
+  <rect x="72" y="222" width="856" height="266" rx="12" fill="#eff6ff" stroke="#93c5fd"/>
+  <use href="#docker" x="92" y="236"/>
+  <text x="126" y="251" font-size="15" font-weight="700" fill="#075985">Docker</text>
 
-  <!-- IMAGEM (molde) -->
-  <rect x="88" y="300" width="370" height="336" rx="12" fill="#ffffff" stroke="#60a5fa" stroke-width="2" stroke-dasharray="7 5"/>
-  <text x="108" y="330" font-size="15" font-weight="800" fill="#1e3a8a">IMAGEM (o molde)</text>
-  <text x="108" y="350" font-size="12.5" fill="#475569">imagem_financeiro — construída 1×</text>
-  <text x="108" y="366" font-size="12.5" fill="#475569">pelo Dockerfile</text>
+  <!-- Imagem -->
+  <rect x="92" y="266" width="300" height="208" rx="10" fill="#ffffff" stroke="#60a5fa" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="112" y="292" font-size="14" font-weight="800" fill="#1e3a8a">1 Imagem (Docker)</text>
+  <rect x="112" y="304" width="260" height="36" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+  <use href="#ubuntu" x="124" y="312"/>
+  <text x="158" y="327" font-size="13" font-weight="600" fill="#7c2d12">Ubuntu 24.04</text>
+  <rect x="112" y="346" width="260" height="36" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <use href="#py" x="124" y="354"/>
+  <text x="158" y="369" font-size="13" font-weight="600" fill="#1e40af">Python / Flask</text>
+  <rect x="112" y="388" width="260" height="36" rx="8" fill="#eff6ff" stroke="#7dd3fc"/>
+  <use href="#db" x="126" y="397"/>
+  <text x="158" y="411" font-size="13" font-weight="600" fill="#0c4a6e">PostgreSQL</text>
+  <rect x="112" y="430" width="260" height="36" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+  <use href="#fly" x="125" y="438"/>
+  <text x="158" y="453" font-size="13" font-weight="600" fill="#991b1b">Flyway</text>
 
-  <rect x="108" y="382" width="330" height="44" rx="9" fill="#fff7ed" stroke="#fdba74"/>
-  <use href="#ubuntu" x="120" y="392"/>
-  <text x="156" y="409" font-size="14" font-weight="600" fill="#7c2d12">Ubuntu 24.04</text>
+  <!-- docker run -->
+  <line x1="402" y1="368" x2="476" y2="368" stroke="#475569" stroke-width="3" marker-end="url(#ar)"/>
+  <text x="439" y="356" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">docker run</text>
+  <text x="439" y="388" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">× 2</text>
 
-  <rect x="108" y="434" width="330" height="44" rx="9" fill="#eff6ff" stroke="#93c5fd"/>
-  <use href="#py" x="118" y="445"/>
-  <use href="#flask" x="147" y="443"/>
-  <text x="186" y="461" font-size="13.5" font-weight="600" fill="#1e40af">Python 3 + Flask</text>
+  <!-- Containers -->
+  <text x="496" y="288" font-size="14" font-weight="800" fill="#065f46">2 Containers</text>
 
-  <rect x="108" y="486" width="330" height="44" rx="9" fill="#eff6ff" stroke="#7dd3fc"/>
-  <use href="#db" x="122" y="495"/>
-  <text x="156" y="513" font-size="14" font-weight="600" fill="#0c4a6e">PostgreSQL 16</text>
+  <rect x="496" y="298" width="416" height="80" rx="10" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text x="514" y="324" font-size="14" font-weight="700" fill="#065f46">Homologação — porta 8081</text>
+  <use href="#flask" x="514" y="336"/>
+  <text x="544" y="354" font-size="13" fill="#0b1324">Flask</text>
+  <use href="#db" x="636" y="337"/>
+  <text x="668" y="354" font-size="13" fill="#0b1324">PostgreSQL</text>
 
-  <rect x="108" y="538" width="330" height="44" rx="9" fill="#fef2f2" stroke="#fca5a5"/>
-  <use href="#fly" x="122" y="547"/>
-  <text x="156" y="565" font-size="14" font-weight="600" fill="#991b1b">Flyway (versão do banco)</text>
+  <rect x="496" y="390" width="416" height="80" rx="10" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text x="514" y="416" font-size="14" font-weight="700" fill="#065f46">Produção — porta 8082</text>
+  <use href="#flask" x="514" y="428"/>
+  <text x="544" y="446" font-size="13" fill="#0b1324">Flask</text>
+  <use href="#db" x="636" y="429"/>
+  <text x="668" y="446" font-size="13" fill="#0b1324">PostgreSQL</text>
 
-  <text x="108" y="612" font-size="11.5" fill="#64748b">Tudo já vem dentro da imagem.</text>
-
-  <!-- seta docker run -->
-  <line x1="470" y1="466" x2="540" y2="466" stroke="#475569" stroke-width="3" marker-end="url(#ar)"/>
-  <text x="505" y="452" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">docker run</text>
-  <text x="505" y="486" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">× 2</text>
-
-  <!-- CONTAINERS -->
-  <text x="556" y="330" font-size="15" font-weight="800" fill="#065f46">CONTAINERS (em execução)</text>
-  <text x="556" y="349" font-size="12.5" fill="#475569">2 cópias da mesma imagem, isoladas</text>
-
-  <!-- container homolog -->
-  <rect x="556" y="362" width="478" height="124" rx="12" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
-  <text x="576" y="389" font-size="15" font-weight="700" fill="#065f46">app_homolog</text>
-  <rect x="700" y="374" width="110" height="24" rx="12" fill="#10b981"/>
-  <text x="755" y="391" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">porta 8081</text>
-  <text x="828" y="391" font-size="12" fill="#047857">Homologação</text>
-  <rect x="576" y="408" width="200" height="60" rx="9" fill="#ffffff" stroke="#a7f3d0"/>
-  <use href="#flask" x="592" y="424"/>
-  <text x="624" y="435" font-size="13" font-weight="600" fill="#0b1324">Flask</text>
-  <text x="624" y="453" font-size="11.5" fill="#64748b">(Python)</text>
-  <rect x="788" y="408" width="228" height="60" rx="9" fill="#ffffff" stroke="#a7f3d0"/>
-  <use href="#db" x="804" y="423"/>
-  <text x="838" y="435" font-size="13" font-weight="600" fill="#0b1324">PostgreSQL</text>
-  <text x="838" y="453" font-size="11.5" fill="#64748b">login admin / admin</text>
-
-  <!-- container prod -->
-  <rect x="556" y="500" width="478" height="124" rx="12" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
-  <text x="576" y="527" font-size="15" font-weight="700" fill="#065f46">app_prod</text>
-  <rect x="700" y="512" width="110" height="24" rx="12" fill="#10b981"/>
-  <text x="755" y="529" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">porta 8082</text>
-  <text x="828" y="529" font-size="12" fill="#047857">Produção</text>
-  <rect x="576" y="546" width="200" height="60" rx="9" fill="#ffffff" stroke="#a7f3d0"/>
-  <use href="#flask" x="592" y="562"/>
-  <text x="624" y="573" font-size="13" font-weight="600" fill="#0b1324">Flask</text>
-  <text x="624" y="591" font-size="11.5" fill="#64748b">(Python)</text>
-  <rect x="788" y="546" width="228" height="60" rx="9" fill="#ffffff" stroke="#a7f3d0"/>
-  <use href="#db" x="804" y="561"/>
-  <text x="838" y="573" font-size="13" font-weight="600" fill="#0b1324">PostgreSQL</text>
-  <text x="838" y="591" font-size="11.5" fill="#64748b">login admin / admin</text>
-
-  <!-- ===== LEGENDA DE TECNOLOGIAS ===== -->
-  <text x="40" y="706" font-size="13" font-weight="700" fill="#0f172a">Tecnologias usadas</text>
+  <!-- Tecnologias -->
+  <text x="50" y="536" font-size="13" font-weight="700" fill="#0f172a">Tecnologias:</text>
   <g font-size="12" font-weight="600">
-    <rect x="40" y="716" width="92" height="28" rx="14" fill="#3776AB"/><text x="86" y="734" text-anchor="middle" fill="#fff">Python</text>
-    <rect x="138" y="716" width="78" height="28" rx="14" fill="#111827"/><text x="177" y="734" text-anchor="middle" fill="#fff">Flask</text>
-    <rect x="222" y="716" width="116" height="28" rx="14" fill="#336791"/><text x="280" y="734" text-anchor="middle" fill="#fff">PostgreSQL</text>
-    <rect x="344" y="716" width="86" height="28" rx="14" fill="#2496ED"/><text x="387" y="734" text-anchor="middle" fill="#fff">Docker</text>
-    <rect x="436" y="716" width="84" height="28" rx="14" fill="#181717"/><text x="478" y="734" text-anchor="middle" fill="#fff">GitHub</text>
-    <rect x="526" y="716" width="128" height="28" rx="14" fill="#2088FF"/><text x="590" y="734" text-anchor="middle" fill="#fff">GitHub Actions</text>
-    <rect x="660" y="716" width="84" height="28" rx="14" fill="#CC0200"/><text x="702" y="734" text-anchor="middle" fill="#fff">Flyway</text>
-    <rect x="750" y="716" width="80" height="28" rx="14" fill="#0A9EDC"/><text x="790" y="734" text-anchor="middle" fill="#fff">pytest</text>
-    <rect x="836" y="716" width="128" height="28" rx="14" fill="#4B8BBE"/><text x="900" y="734" text-anchor="middle" fill="#fff">Flake8 / Pylint</text>
-    <rect x="970" y="716" width="110" height="28" rx="14" fill="#E95420"/><text x="1025" y="734" text-anchor="middle" fill="#fff">Ubuntu 24.04</text>
+    <rect x="50" y="546" width="80" height="26" rx="13" fill="#3776AB"/><text x="90" y="563" text-anchor="middle" fill="#fff">Python</text>
+    <rect x="136" y="546" width="70" height="26" rx="13" fill="#111827"/><text x="171" y="563" text-anchor="middle" fill="#fff">Flask</text>
+    <rect x="212" y="546" width="106" height="26" rx="13" fill="#336791"/><text x="265" y="563" text-anchor="middle" fill="#fff">PostgreSQL</text>
+    <rect x="324" y="546" width="78" height="26" rx="13" fill="#2496ED"/><text x="363" y="563" text-anchor="middle" fill="#fff">Docker</text>
+    <rect x="408" y="546" width="78" height="26" rx="13" fill="#181717"/><text x="447" y="563" text-anchor="middle" fill="#fff">GitHub</text>
+    <rect x="492" y="546" width="118" height="26" rx="13" fill="#2088FF"/><text x="551" y="563" text-anchor="middle" fill="#fff">GitHub Actions</text>
+    <rect x="616" y="546" width="74" height="26" rx="13" fill="#CC0200"/><text x="653" y="563" text-anchor="middle" fill="#fff">Flyway</text>
+    <rect x="696" y="546" width="70" height="26" rx="13" fill="#0A9EDC"/><text x="731" y="563" text-anchor="middle" fill="#fff">pytest</text>
+    <rect x="772" y="546" width="74" height="26" rx="13" fill="#4B8BBE"/><text x="809" y="563" text-anchor="middle" fill="#fff">Flake8</text>
+    <rect x="852" y="546" width="98" height="26" rx="13" fill="#E95420"/><text x="901" y="563" text-anchor="middle" fill="#fff">Ubuntu 24.04</text>
   </g>
 </svg>
