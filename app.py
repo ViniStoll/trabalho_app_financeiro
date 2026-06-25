@@ -88,18 +88,16 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # erro proposital de qualidade: descomente a linha abaixo para o CI/CD barrar
-    # configuracao_invalida
+    # erro proposital
+    configuracao_invalida
     session.clear()
     return redirect(url_for('login'))
 
 @app.route('/listagem')
 def listagem():
-    # Se nao estiver logado, volta para a tela de login.
     if not session.get('logado'):
         return redirect(url_for('login'))
     try:
-        # Captura os filtros da URL
         filtro_data = request.args.get('data')
         filtro_status = request.args.get('status')
 
@@ -126,7 +124,7 @@ def listagem():
         <body style="font-family: sans-serif; padding: 40px; background: #f4f7f6;">
             <div style="max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
                 <h2 style="color: #333; display: flex; justify-content: space-between;">
-                    Meus Lançamentos
+                    Meu Financeiro
                     <a href="/novo" style="font-size: 16px; background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Novo Lançamento</a>
                 </h2>
 
