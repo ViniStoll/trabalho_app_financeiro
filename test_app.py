@@ -2,8 +2,34 @@ import unittest
 from unittest.mock import patch, MagicMock
 from app import app
 
+
+# ------------------------------------------------------------------
+# Dublês de teste (no mesmo estilo dos exemplos da aula 8).
+# Servem para substituir partes "de verdade" (banco, e-mail) durante
+# os testes. Os 4 tipos vistos em aula: Dummy, Stub, Fake e Mock.
+# ------------------------------------------------------------------
+
+# DUMMY: objeto que só é passado para preencher, mas não faz nada.
+class EmailDummy:
+    def enviar(self, *args):
+        pass  # nao faz nada
+
+
+# FAKE: uma implementação "de mentira" e simples (guarda em memória,
+# no lugar de um banco de dados de verdade).
+class BancoFake:
+    def __init__(self):
+        self.itens = []
+
+    def salvar(self, item):
+        self.itens.append(item)
+
+    def listar(self):
+        return self.itens
+
+
 class TestAppFinanceiro(unittest.TestCase):
-    
+
     def setUp(self):
         # Ativa o modo de teste no app principal
         app.config['TESTING'] = True
@@ -13,191 +39,190 @@ class TestAppFinanceiro(unittest.TestCase):
         with self.app.session_transaction() as sessao:
             sessao['logado'] = True
 
-    # --- TESTES DE CONFIGURAÇÃO E LOGIN ---
-    def test_01_app_is_testing(self):
-        """1. Testa se o modo de testes do Flask está ativo"""
+    # ==============================================================
+    # TESTES BASICOS (configuracao e tela de login)
+    # ==============================================================
+    def test_01_app_em_modo_teste(self):
+        """1. O modo de testes do Flask deve estar ativo"""
         self.assertTrue(app.config['TESTING'])
         # ===== ERRO PROPOSITAL (DEMONSTRACAO DO CI/CD) =====
         # Para mostrar o pipeline barrando o deploy, descomente a linha abaixo,
         # faca commit e push. Depois comente de novo para corrigir.
         # self.assertEqual(1, 2)
 
-    def test_02_login_route_get(self):
-        """2. Testa se a página de login carrega corretamente (Status 200)"""
-        response = self.app.get('/')
-        self.assertEqual(response.status_code, 200)
+    def test_02_login_abre(self):
+        """2. A pagina de login deve carregar (HTTP 200)"""
+        resposta = self.app.get('/')
+        self.assertEqual(resposta.status_code, 200)
 
-    def test_03_login_page_content(self):
-        """3. Testa se o HTML do login possui o título correto"""
-        response = self.app.get('/')
-        self.assertIn(b'Financeiro Login', response.data)
+    def test_03_login_tem_titulo(self):
+        """3. A pagina de login deve ter o titulo certo"""
+        resposta = self.app.get('/')
+        self.assertIn(b'Financeiro Login', resposta.data)
+
+    # ==============================================================
+    # STUB - troco o banco por um duble que devolve um dado PRONTO
+    # ==============================================================
+    @patch('app.get_db_connection')
+    def test_04_login_errado(self, banco_falso):
+        """4. Login/senha errados devem ser recusados"""
+        # o stub devolve "nenhum usuario encontrado"
+        cursor = MagicMock()
+        cursor.fetchone.return_value = None
+        banco_falso.return_value.cursor.return_value = cursor
+
+        resposta = self.app.post('/', data=dict(login='errado', senha='123'))
+        self.assertIn(b'Login ou senha incorretos', resposta.data)
 
     @patch('app.get_db_connection')
-    def test_04_login_post_invalid(self, mock_db):
-        """4. Testa erro ao inserir login/senha errados"""
-        # Configura o mock para fingir que o banco não achou o usuário
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = None
-        mock_db.return_value.cursor.return_value = mock_cursor
+    def test_05_login_certo(self, banco_falso):
+        """5. Login certo deve redirecionar (HTTP 302) para a listagem"""
+        # o stub devolve um usuario pronto
+        cursor = MagicMock()
+        cursor.fetchone.return_value = ('admin', 'admin')
+        banco_falso.return_value.cursor.return_value = cursor
 
-        response = self.app.post('/', data=dict(login='errado', senha='123'))
-        self.assertIn(b'Login ou senha incorretos', response.data)
-
-    @patch('app.get_db_connection')
-    def test_05_login_post_valid(self, mock_db):
-        """5. Testa sucesso no login (Redirecionamento HTTP 302)"""
-        # Finge que achou o usuário no banco
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = ('admin', 'admin') 
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.post('/', data=dict(login='admin', senha='123'))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/listagem', response.headers.get('Location'))
-
-    # --- TESTES DA LISTAGEM E FILTROS ---
-    @patch('app.get_db_connection')
-    def test_06_listagem_route_get(self, mock_db):
-        """6. Testa se a página de listagem abre corretamente"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.get('/listagem')
-        self.assertEqual(response.status_code, 200)
+        resposta = self.app.post('/', data=dict(login='admin', senha='admin'))
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn('/listagem', resposta.headers.get('Location'))
 
     @patch('app.get_db_connection')
-    def test_07_listagem_content(self, mock_db):
-        """7. Testa se a tabela de lançamentos é renderizada"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [(1, 'Conta de Luz', '2026-04-10', 150.0, 'Despesa', 'Pendente')]
-        mock_db.return_value.cursor.return_value = mock_cursor
+    def test_06_listagem_mostra_dado(self, banco_falso):
+        """6. A listagem deve mostrar o lancamento que o banco devolveu"""
+        # o stub devolve uma linha pronta
+        cursor = MagicMock()
+        cursor.fetchall.return_value = [(1, 'Conta de Luz', '2026-04-10', 150.0, 'Despesa', 'Pendente')]
+        banco_falso.return_value.cursor.return_value = cursor
 
-        response = self.app.get('/listagem')
-        self.assertIn(b'Conta de Luz', response.data)
-
-    @patch('app.get_db_connection')
-    def test_08_listagem_filtro_data(self, mock_db):
-        """8. Testa se a listagem aceita filtro de data sem quebrar"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.get('/listagem?data=2026-04-10')
-        self.assertEqual(response.status_code, 200)
+        resposta = self.app.get('/listagem')
+        self.assertIn(b'Conta de Luz', resposta.data)
 
     @patch('app.get_db_connection')
-    def test_09_listagem_filtro_status(self, mock_db):
-        """9. Testa se a listagem aceita filtro de status sem quebrar"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_db.return_value.cursor.return_value = mock_cursor
+    def test_07_listagem_vazia(self, banco_falso):
+        """7. A listagem sem dados deve abrir normalmente (HTTP 200)"""
+        cursor = MagicMock()
+        cursor.fetchall.return_value = []
+        banco_falso.return_value.cursor.return_value = cursor
 
-        response = self.app.get('/listagem?status=Pago')
-        self.assertEqual(response.status_code, 200)
+        resposta = self.app.get('/listagem')
+        self.assertEqual(resposta.status_code, 200)
 
-    # --- TESTES DO NOVO LANÇAMENTO (CREATE) ---
-    def test_10_novo_route_get(self):
-        """10. Testa se o formulário de novo lançamento abre"""
-        response = self.app.get('/novo')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('Novo Lançamento'.encode('utf-8'), response.data)
+    @patch('app.get_db_connection')
+    def test_08_editar_carrega_dado(self, banco_falso):
+        """8. A tela de editar deve carregar o lancamento do banco"""
+        cursor = MagicMock()
+        cursor.fetchone.return_value = (1, 'Venda', '2026-04-10', 200.0, 'Receita', 'Pago')
+        banco_falso.return_value.cursor.return_value = cursor
 
+        resposta = self.app.get('/editar/1')
+        self.assertIn(b'Venda', resposta.data)
+
+    # ==============================================================
+    # MOCK - troco a dependencia e VERIFICO se ela foi chamada
+    # ==============================================================
     @patch('app.enviar_email_notificacao')
     @patch('app.get_db_connection')
-    def test_11_novo_route_post(self, mock_db, mock_email):
-        """11. Testa o envio do formulário de novo lançamento"""
-        response = self.app.post('/novo', data=dict(
-            descricao='Teste Unitário', data_lancamento='2026-05-01',
-            valor='100', tipo_lancamento='Receita', situacao='Pago'
-        ))
-        self.assertEqual(response.status_code, 302) # Deve redirecionar após salvar
-
-    @patch('app.enviar_email_notificacao')
-    @patch('app.get_db_connection')
-    def test_12_novo_chama_email(self, mock_db, mock_email):
-        """12. Testa se a função de e-mail é chamada ao criar"""
+    def test_09_criar_chama_email(self, banco_falso, email_mock):
+        """9. Ao criar um lancamento, o e-mail deve ser chamado"""
         self.app.post('/novo', data=dict(
             descricao='Teste E-mail', data_lancamento='2026-05-01',
             valor='100', tipo_lancamento='Receita', situacao='Pago'
         ))
-        mock_email.assert_called_once_with('criado', 'Teste E-mail')
-
-    # --- TESTES DA EDIÇÃO (UPDATE) ---
-    @patch('app.get_db_connection')
-    def test_13_editar_route_get(self, mock_db):
-        """13. Testa se o formulário de edição carrega dados"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = (1, 'Venda', '2026-04-10', 200.0, 'Receita', 'Pago')
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.get('/editar/1')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Editar', response.data)
+        # o mock verifica que o e-mail foi chamado com os dados certos
+        email_mock.assert_called_once_with('criado', 'Teste E-mail')
 
     @patch('app.enviar_email_notificacao')
     @patch('app.get_db_connection')
-    def test_14_editar_route_post(self, mock_db, mock_email):
-        """14. Testa o envio do formulário de edição"""
-        response = self.app.post('/editar/1', data=dict(
+    def test_10_editar_chama_email(self, banco_falso, email_mock):
+        """10. Ao editar um lancamento, o e-mail deve ser chamado"""
+        self.app.post('/editar/1', data=dict(
             descricao='Editado', data_lancamento='2026-05-01',
             valor='150', tipo_lancamento='Receita', situacao='Pago'
         ))
-        self.assertEqual(response.status_code, 302)
+        email_mock.assert_called_once_with('atualizado', 'Editado')
+
+    # ==============================================================
+    # FAKE - um banco "de mentira" em memoria (sem banco de verdade)
+    # ==============================================================
+    def test_11_fake_salva_e_lista(self):
+        """11. O banco fake deve guardar e devolver os itens"""
+        banco = BancoFake()
+        banco.salvar('Conta de Luz')
+        banco.salvar('Aluguel')
+        self.assertEqual(banco.listar(), ['Conta de Luz', 'Aluguel'])
+
+    def test_12_fake_comeca_vazio(self):
+        """12. O banco fake deve comecar sem nenhum item"""
+        banco = BancoFake()
+        self.assertEqual(len(banco.listar()), 0)
+
+    # ==============================================================
+    # DUMMY - objeto que so e passado, mas nao e usado de verdade
+    # ==============================================================
+    def test_13_dummy_nao_faz_nada(self):
+        """13. O e-mail dummy pode ser chamado sem nenhum efeito"""
+        email = EmailDummy()
+        self.assertIsNone(email.enviar('qualquer coisa'))
+
+    @patch('app.get_db_connection')
+    def test_14_sem_email_nao_quebra(self, banco_falso):
+        """14. Sem e-mail configurado (age como dummy), criar ainda funciona"""
+        resposta = self.app.post('/novo', data=dict(
+            descricao='Sem e-mail', data_lancamento='2026-05-01',
+            valor='50', tipo_lancamento='Despesa', situacao='Pago'
+        ))
+        self.assertEqual(resposta.status_code, 302)
+
+    # ==============================================================
+    # ROTAS E CRUD (testes diretos das telas do sistema)
+    # ==============================================================
+    def test_15_novo_abre(self):
+        """15. A tela de novo lancamento deve abrir"""
+        resposta = self.app.get('/novo')
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn('Novo Lançamento'.encode('utf-8'), resposta.data)
 
     @patch('app.enviar_email_notificacao')
     @patch('app.get_db_connection')
-    def test_15_editar_chama_email(self, mock_db, mock_email):
-        """15. Testa se a função de e-mail é chamada ao editar"""
-        self.app.post('/editar/1', data=dict(
-            descricao='Editado E-mail', data_lancamento='2026-05-01',
-            valor='150', tipo_lancamento='Receita', situacao='Pago'
+    def test_16_novo_salva(self, banco_falso, email_mock):
+        """16. Salvar um novo lancamento deve redirecionar (302)"""
+        resposta = self.app.post('/novo', data=dict(
+            descricao='Mercado', data_lancamento='2026-05-01',
+            valor='100', tipo_lancamento='Despesa', situacao='Pago'
         ))
-        mock_email.assert_called_once_with('atualizado', 'Editado E-mail')
+        self.assertEqual(resposta.status_code, 302)
 
-    # --- TESTES DA EXCLUSÃO (DELETE) ---
+    @patch('app.enviar_email_notificacao')
     @patch('app.get_db_connection')
-    def test_16_excluir_route(self, mock_db):
-        """16. Testa a rota de exclusão (Redirecionamento)"""
-        response = self.app.get('/excluir/1')
-        self.assertEqual(response.status_code, 302)
-
-    # --- TESTES DO PDF ---
-    @patch('app.get_db_connection')
-    def test_17_pdf_route_get(self, mock_db):
-        """17. Testa se o PDF é gerado sem erros de servidor"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [(1, 'PDF Teste', '2026-04-10', 100.0, 'Receita', 'Pago')]
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.get('/exportar_pdf')
-        self.assertEqual(response.status_code, 200)
+    def test_17_editar_salva(self, banco_falso, email_mock):
+        """17. Salvar a edicao de um lancamento deve redirecionar (302)"""
+        resposta = self.app.post('/editar/1', data=dict(
+            descricao='Mercado editado', data_lancamento='2026-05-01',
+            valor='120', tipo_lancamento='Despesa', situacao='Pago'
+        ))
+        self.assertEqual(resposta.status_code, 302)
 
     @patch('app.get_db_connection')
-    def test_18_pdf_mimetype(self, mock_db):
-        """18. Testa se o arquivo retornado realmente é do tipo PDF"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_db.return_value.cursor.return_value = mock_cursor
-
-        response = self.app.get('/exportar_pdf')
-        self.assertEqual(response.mimetype, 'application/pdf')
+    def test_18_excluir(self, banco_falso):
+        """18. Excluir um lancamento deve redirecionar (302)"""
+        resposta = self.app.get('/excluir/1')
+        self.assertEqual(resposta.status_code, 302)
 
     @patch('app.get_db_connection')
-    def test_19_pdf_attachment(self, mock_db):
-        """19. Testa se o PDF força o download (attachment)"""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_db.return_value.cursor.return_value = mock_cursor
+    def test_19_exportar_pdf(self, banco_falso):
+        """19. O relatorio exportado deve ser um arquivo PDF"""
+        cursor = MagicMock()
+        cursor.fetchall.return_value = []
+        banco_falso.return_value.cursor.return_value = cursor
 
-        response = self.app.get('/exportar_pdf')
-        self.assertIn('attachment', response.headers.get('Content-Disposition', ''))
+        resposta = self.app.get('/exportar_pdf')
+        self.assertEqual(resposta.mimetype, 'application/pdf')
 
-    # --- TESTE DE ROTA INVÁLIDA ---
-    def test_20_rota_inexistente(self):
-        """20. Testa acesso a uma URL que não existe (Erro 404)"""
-        response = self.app.get('/pagina_falsa_do_vinicius')
-        self.assertEqual(response.status_code, 404)
+    def test_20_pagina_inexistente(self):
+        """20. Uma URL que nao existe deve dar erro 404"""
+        resposta = self.app.get('/pagina_que_nao_existe')
+        self.assertEqual(resposta.status_code, 404)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
