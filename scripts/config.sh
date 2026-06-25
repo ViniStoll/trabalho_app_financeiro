@@ -45,10 +45,13 @@ rodar_testes() {
         "$VENV_TESTES/bin/pip" install -q --upgrade pip
         "$VENV_TESTES/bin/pip" install -q -r "$PROJETO_DIR/requirements.txt" -r "$PROJETO_DIR/requirements-dev.txt"
     fi
+    # Roda sempre de DENTRO da pasta do projeto. Isso e importante porque a
+    # tela de exportar PDF grava o arquivo na pasta atual; rodando de outro
+    # lugar (ex: a home) o teste do PDF nao acha o arquivo e falha.
     # 1) testes automatizados
-    "$VENV_TESTES/bin/pytest" "$PROJETO_DIR/test_app.py" -q || return 1
+    ( cd "$PROJETO_DIR" && "$VENV_TESTES/bin/pytest" test_app.py -q ) || return 1
     # 2) qualidade do codigo (erros graves: sintaxe, variavel indefinida, etc.)
-    "$VENV_TESTES/bin/flake8" "$PROJETO_DIR/app.py" --select=E9,F63,F7,F82 || return 1
+    ( cd "$PROJETO_DIR" && "$VENV_TESTES/bin/flake8" app.py --select=E9,F63,F7,F82 ) || return 1
     return 0
 }
 
