@@ -33,10 +33,10 @@ FLYWAY_IMG="flyway/flyway:10"
 VENV_TESTES="$PROJETO_DIR/.venv_testes"
 
 # ------------------------------------------------------------
-# Funcao que roda os 20 testes automatizados.
-# Cria o ambiente de testes na primeira vez (instala as
-# dependencias). Retorna 0 se todos passarem, diferente de 0
-# se algum falhar. E usada para BLOQUEAR o deploy quando ha erro.
+# Funcao que roda os 20 testes automatizados E a analise de
+# qualidade do codigo. Cria o ambiente na primeira vez (instala
+# as dependencias). Retorna 0 se passar tudo, diferente de 0 se
+# algo falhar. E usada para BLOQUEAR o deploy quando ha erro.
 # ------------------------------------------------------------
 rodar_testes() {
     if [ ! -d "$VENV_TESTES" ]; then
@@ -45,7 +45,11 @@ rodar_testes() {
         "$VENV_TESTES/bin/pip" install -q --upgrade pip
         "$VENV_TESTES/bin/pip" install -q -r "$PROJETO_DIR/requirements.txt" -r "$PROJETO_DIR/requirements-dev.txt"
     fi
-    "$VENV_TESTES/bin/pytest" "$PROJETO_DIR/test_app.py" -q
+    # 1) testes automatizados
+    "$VENV_TESTES/bin/pytest" "$PROJETO_DIR/test_app.py" -q || return 1
+    # 2) qualidade do codigo (erros graves: sintaxe, variavel indefinida, etc.)
+    "$VENV_TESTES/bin/flake8" "$PROJETO_DIR/app.py" --select=E9,F63,F7,F82 || return 1
+    return 0
 }
 
 # ------------------------------------------------------------
