@@ -37,6 +37,10 @@ sudo docker network create "$REDE" 2>/dev/null || true
 echo ">>> Construindo a imagem '$IMAGEM' (pode demorar na primeira vez)..."
 sudo docker build -t "$IMAGEM" "$PROJETO_DIR"
 
+# 5b. Prepara o ambiente de testes (usado depois pelos scripts de atualizacao)
+echo ">>> Preparando o ambiente de testes..."
+rodar_testes || true
+
 # 6. Sobe o container de HOMOLOGACAO
 echo ">>> Subindo o ambiente de HOMOLOGACAO (porta $PORTA_HOMOLOG)..."
 sudo docker rm -f "$CONT_HOMOLOG" 2>/dev/null || true

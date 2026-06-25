@@ -1,0 +1,85 @@
+<svg viewBox="0 0 1060 600" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" role="img">
+  <title>Arquitetura do fluxo CI/CD do sistema financeiro</title>
+  <desc>Meu computador envia o codigo para o GitHub, que roda testes, qualidade e build. Depois um script atualiza os containers de Homologacao e Producao na VM da Univates.</desc>
+
+  <defs>
+    <marker id="seta" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1060" height="600" fill="#ffffff"/>
+  <text x="530" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Arquitetura do Fluxo CI/CD — Sistema Financeiro</text>
+
+  <!-- ZONA 1: MEU COMPUTADOR -->
+  <rect x="24" y="80" width="250" height="200" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="112" font-size="17" font-weight="700" fill="#0f172a">Meu Computador</text>
+  <text x="44" y="132" font-size="13" fill="#64748b">Workspace local</text>
+  <text x="44" y="168" font-size="13.5" fill="#334155">• Altero a label (Python/Flask)</text>
+  <text x="44" y="196" font-size="13.5" fill="#334155">• Crio a migração do banco (SQL)</text>
+  <text x="44" y="224" font-size="13.5" fill="#334155">• git commit + push</text>
+
+  <!-- seta 1 -->
+  <line x1="276" y1="180" x2="358" y2="180" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="317" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">git push</text>
+
+  <!-- ZONA 2: GITHUB -->
+  <rect x="362" y="80" width="300" height="330" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="382" y="112" font-size="17" font-weight="700" fill="#0f172a">GitHub (nuvem)</text>
+
+  <rect x="382" y="128" width="260" height="44" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="396" y="148" font-size="13.5" font-weight="600" fill="#3730a3">Repositório Git</text>
+  <text x="396" y="164" font-size="12" fill="#475569">versionamento do código</text>
+
+  <rect x="382" y="182" width="260" height="124" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="396" y="202" font-size="13.5" font-weight="700" fill="#1e40af">GitHub Actions — Integração</text>
+  <text x="396" y="226" font-size="12.5" fill="#334155">• 20 testes automatizados (pytest)</text>
+  <text x="396" y="250" font-size="12.5" fill="#334155">• Qualidade: Flake8 + Pylint</text>
+  <text x="396" y="274" font-size="12.5" fill="#334155">• Build da imagem Docker</text>
+  <text x="396" y="296" font-size="11.5" fill="#64748b">(roda junto a cada push)</text>
+
+  <rect x="382" y="316" width="260" height="44" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="396" y="336" font-size="13.5" font-weight="600" fill="#3730a3">Issues</text>
+  <text x="396" y="352" font-size="12" fill="#475569">registro da mudança</text>
+
+  <!-- seta 2 -->
+  <line x1="664" y1="230" x2="746" y2="230" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="705" y="216" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">deploy por</text>
+  <text x="705" y="250" text-anchor="middle" font-size="11" fill="#64748b">script (na VM)</text>
+
+  <!-- ZONA 3: VM -->
+  <rect x="750" y="80" width="286" height="410" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="770" y="110" font-size="16" font-weight="700" fill="#0f172a">VM Univates — Ubuntu 24.04</text>
+  <text x="770" y="128" font-size="13" fill="#64748b">Docker (containers)</text>
+
+  <!-- container homolog -->
+  <rect x="768" y="142" width="250" height="92" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="782" y="163" font-size="13.5" font-weight="700" fill="#065f46">Container — Homologação :8081</text>
+  <rect x="782" y="174" width="105" height="46" rx="6" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="834" y="195" text-anchor="middle" font-size="12.5" fill="#334155">Flask</text>
+  <text x="834" y="211" text-anchor="middle" font-size="11" fill="#64748b">(Python)</text>
+  <rect x="899" y="174" width="105" height="46" rx="6" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="951" y="201" text-anchor="middle" font-size="12.5" fill="#334155">PostgreSQL</text>
+
+  <!-- container prod -->
+  <rect x="768" y="246" width="250" height="92" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="782" y="267" font-size="13.5" font-weight="700" fill="#065f46">Container — Produção :8082</text>
+  <rect x="782" y="278" width="105" height="46" rx="6" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="834" y="299" text-anchor="middle" font-size="12.5" fill="#334155">Flask</text>
+  <text x="834" y="315" text-anchor="middle" font-size="11" fill="#64748b">(Python)</text>
+  <rect x="899" y="278" width="105" height="46" rx="6" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="951" y="305" text-anchor="middle" font-size="12.5" fill="#334155">PostgreSQL</text>
+
+  <!-- notas VM -->
+  <rect x="768" y="350" width="250" height="124" rx="8" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="782" y="372" font-size="12.5" fill="#334155">• Flyway — migrações do banco</text>
+  <text x="782" y="396" font-size="12.5" fill="#334155">• Usuário inicial: admin / admin</text>
+  <text x="782" y="420" font-size="12.5" fill="#334155">• Scripts atualizam cada ambiente</text>
+  <text x="782" y="444" font-size="12.5" fill="#334155">• Testes passam → libera o deploy</text>
+  <text x="782" y="466" font-size="11" fill="#64748b">(banco não é apagado; só migra)</text>
+
+  <!-- LEGENDA DE TECNOLOGIAS -->
+  <rect x="24" y="520" width="1012" height="56" rx="10" fill="#1e293b"/>
+  <text x="44" y="545" font-size="13" font-weight="700" fill="#ffffff">Tecnologias:</text>
+  <text x="44" y="565" font-size="12.5" fill="#e2e8f0">Python · Flask · PostgreSQL · Docker · Git + GitHub · GitHub Actions · Flyway · pytest · Flake8 / Pylint · Shell scripts · Ubuntu 24.04</text>
+</svg>

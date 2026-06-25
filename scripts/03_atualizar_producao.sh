@@ -18,7 +18,19 @@ cd "$PROJETO_DIR"
 git fetch origin
 git reset --hard origin/main
 
-# 2. Aplica SOMENTE as migracoes novas do banco
+# 2. Roda os testes automatizados. Se algum falhar, CANCELA a atualizacao.
+echo ">>> Rodando os testes automatizados..."
+if ! rodar_testes; then
+    echo ""
+    echo "############################################################"
+    echo " TESTES FALHARAM! A atualizacao da PRODUCAO foi cancelada."
+    echo " Corrija o erro, faca commit e push, e rode o script de novo."
+    echo "############################################################"
+    exit 1
+fi
+echo ">>> Todos os testes passaram. Seguindo com a atualizacao..."
+
+# 3. Aplica SOMENTE as migracoes novas do banco
 echo ">>> Aplicando migracoes do banco em PRODUCAO..."
 flyway_migrate "$CONT_PROD"
 

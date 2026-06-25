@@ -1,6 +1,7 @@
 # Ambiente virtual do Python (nao precisa versionar)
 venv/
 .venv/
+.venv_testes/
 env/
 
 # Arquivos de cache do Python

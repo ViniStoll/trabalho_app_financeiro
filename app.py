@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template_string, request, redirect, url_for, send_file
+from flask import Flask, render_template_string, request, redirect, url_for, send_file, session
 import psycopg2
 from fpdf import FPDF
 import smtplib
@@ -7,6 +7,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
+
+# Chave usada para assinar a sessao de login. Ela e gerada de novo toda vez
+# que a aplicacao inicia. Assim, quando atualizamos o sistema (que reinicia
+# a aplicacao), a sessao "cai" e o usuario volta para a tela de login.
+app.secret_key = os.urandom(24)
 
 # ------------------------------------------------------------------
 # Configuracoes do Banco de Dados
@@ -83,6 +88,7 @@ def login():
         conn.close()
 
         if user:
+            session['logado'] = True
             return redirect(url_for('listagem'))
         else:
             return "Login ou senha incorretos! <a href='/'>Tentar novamente</a>"
@@ -98,8 +104,17 @@ def login():
         </body>
     '''
 
+@app.route('/logout')
+def logout():
+    # Limpa a sessao e volta para a tela de login.
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/listagem')
 def listagem():
+    # Se nao estiver logado, volta para a tela de login.
+    if not session.get('logado'):
+        return redirect(url_for('login'))
     try:
         # Captura os filtros da URL (ex: ?data=2026-03-05&status=Pago)
         filtro_data = request.args.get('data')
@@ -129,10 +144,7 @@ def listagem():
             <div style="max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
                 <h2 style="color: #333; display: flex; justify-content: space-between;">
                     Meus Lançamentos
-                    <span>
-                        <a href="/categorias" style="font-size: 16px; background: #6f42c1; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; margin-right: 8px;">Categorias</a>
-                        <a href="/novo" style="font-size: 16px; background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Novo Lançamento</a>
-                    </span>
+                    <a href="/novo" style="font-size: 16px; background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">+ Novo Lançamento</a>
                 </h2>
 
                 <form method="get" style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
@@ -168,7 +180,7 @@ def listagem():
                     </tr>
                     {% endfor %}
                 </table>
-                <br><a href="/" style="text-decoration: none; color: #dc3545; font-weight: bold;">Sair do Sistema</a>
+                <br><a href="/logout" style="text-decoration: none; color: #dc3545; font-weight: bold;">Sair do Sistema</a>
             </div>
         </body>
         '''
@@ -176,55 +188,10 @@ def listagem():
     except Exception as e:
         return f"Erro de conexão: {e}"
 
-@app.route('/categorias')
-def categorias():
-    # Tela simples que lista as categorias cadastradas.
-    # A tabela 'categoria' e criada pela migracao V2 do banco.
-    # Enquanto a migracao nao for aplicada, mostramos um aviso amigavel.
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT id, nome, descricao FROM categoria ORDER BY id")
-        dados = cur.fetchall()
-        cur.close()
-        conn.close()
-        tabela_existe = True
-    except Exception:
-        dados = []
-        tabela_existe = False
-
-    html = '''
-        <body style="font-family: sans-serif; padding: 40px; background: #f4f7f6;">
-            <div style="max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
-                <h2 style="color: #333;">Categorias</h2>
-                {% if not tabela_existe %}
-                    <p style="color: #856404; background: #fff3cd; padding: 12px; border-radius: 5px;">
-                        A tabela de categorias ainda não foi criada (será adicionada pela migração V2 do banco).
-                    </p>
-                {% else %}
-                    <table border="0" style="width:100%; border-collapse: collapse;">
-                        <tr style="background-color: #6f42c1; color: white; text-align: left;">
-                            <th style="padding: 12px;">ID</th>
-                            <th style="padding: 12px;">Nome</th>
-                            <th style="padding: 12px;">Descrição</th>
-                        </tr>
-                        {% for item in dados %}
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px;">{{ item[0] }}</td>
-                            <td style="padding: 12px;">{{ item[1] }}</td>
-                            <td style="padding: 12px;">{{ item[2] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                {% endif %}
-                <br><a href="/listagem" style="text-decoration: none; color: #007bff; font-weight: bold;">&larr; Voltar para Lançamentos</a>
-            </div>
-        </body>
-    '''
-    return render_template_string(html, dados=dados, tabela_existe=tabela_existe)
-
 @app.route('/novo', methods=['GET', 'POST'])
 def novo():
+    if not session.get('logado'):
+        return redirect(url_for('login'))
     if request.method == 'POST':
         descricao = request.form['descricao']
         data_lancamento = request.form['data_lancamento']
@@ -271,6 +238,8 @@ def novo():
 
 @app.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar(id):
+    if not session.get('logado'):
+        return redirect(url_for('login'))
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -323,6 +292,8 @@ def editar(id):
 
 @app.route('/excluir/<int:id>')
 def excluir(id):
+    if not session.get('logado'):
+        return redirect(url_for('login'))
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM lancamento WHERE id = %s", (id,))
@@ -333,6 +304,8 @@ def excluir(id):
 
 @app.route('/exportar_pdf')
 def exportar_pdf():
+    if not session.get('logado'):
+        return redirect(url_for('login'))
     try:
         # 1. Captura os mesmos filtros que a listagem usa
         filtro_data = request.args.get('data')

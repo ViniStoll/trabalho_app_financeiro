@@ -9,6 +9,9 @@ class TestAppFinanceiro(unittest.TestCase):
         app.config['TESTING'] = True
         # Cria um "cliente de teste" para simular o navegador
         self.app = app.test_client()
+        # Ja entra "logado" para conseguir testar as telas internas
+        with self.app.session_transaction() as sessao:
+            sessao['logado'] = True
 
     # --- TESTES DE CONFIGURAÇÃO E LOGIN ---
     def test_01_app_is_testing(self):

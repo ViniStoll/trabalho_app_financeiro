@@ -29,6 +29,25 @@ MIGRACOES_DIR="$PROJETO_DIR/db/migrations"
 # Imagem oficial do Flyway (ferramenta de versionamento do banco)
 FLYWAY_IMG="flyway/flyway:10"
 
+# Ambiente virtual Python usado so para rodar os testes na VM
+VENV_TESTES="$PROJETO_DIR/.venv_testes"
+
+# ------------------------------------------------------------
+# Funcao que roda os 20 testes automatizados.
+# Cria o ambiente de testes na primeira vez (instala as
+# dependencias). Retorna 0 se todos passarem, diferente de 0
+# se algum falhar. E usada para BLOQUEAR o deploy quando ha erro.
+# ------------------------------------------------------------
+rodar_testes() {
+    if [ ! -d "$VENV_TESTES" ]; then
+        echo "    (preparando o ambiente de testes pela primeira vez...)"
+        python3 -m venv "$VENV_TESTES"
+        "$VENV_TESTES/bin/pip" install -q --upgrade pip
+        "$VENV_TESTES/bin/pip" install -q -r "$PROJETO_DIR/requirements.txt" -r "$PROJETO_DIR/requirements-dev.txt"
+    fi
+    "$VENV_TESTES/bin/pytest" "$PROJETO_DIR/test_app.py" -q
+}
+
 # ------------------------------------------------------------
 # Funcao que aplica as migracoes do banco em um container.
 # Recebe como parametro o nome do container alvo (ex: app_homolog).
