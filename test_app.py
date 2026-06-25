@@ -48,7 +48,7 @@ class TestAppFinanceiro(unittest.TestCase):
         # ===== ERRO PROPOSITAL (DEMONSTRACAO DO CI/CD) =====
         # Para mostrar o pipeline barrando o deploy, descomente a linha abaixo,
         # faca commit e push. Depois comente de novo para corrigir.
-        self.assertEqual(1, 2)
+        # self.assertEqual(1, 2)
 
     def test_02_login_abre(self):
         """2. A pagina de login deve carregar (HTTP 200)"""
