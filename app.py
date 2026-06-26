@@ -89,7 +89,7 @@ def login():
 @app.route('/logout')
 def logout():
     # erro proposital
-    configuracao_invalida
+    # configuracao_invalida
     session.clear()
     return redirect(url_for('login'))
 
